@@ -1,0 +1,11 @@
+.img-des {
+  height: auto;
+  width: 300px;
+}
+:where(.css-dev-only-do-not-override-14i19y2).ant-drawer .ant-drawer-mask {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  background: rgb(0 0 0 / 0%);
+  pointer-events: auto;
+}

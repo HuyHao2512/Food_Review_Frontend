@@ -1,0 +1,28 @@
+[
+  {
+    "id": 1,
+    "name": "Quán thức ăn nhanh Jollibee",
+    "position": [10.0288, 105.7682],
+    "address": "3/2, P.Xuân Khánh, Q.Ninh Kiều, TP.Cần Thơ",
+    "phone": "0123456789",
+    "open": "8:00",
+    "close": "22:00",
+    "image": "public/images/monan.jpg",
+    "advantage": "Nhân viên nhiệt tình, giá cả hợp lý",
+    "disadvantage": "Hơi đông khách nên phải chờ lâu",
+    "rate": 4.5
+  },
+  {
+    "id": 2,
+    "name": "Mr.Chef  ",
+    "position": [10.0325, 105.7828],
+    "address": "3/2, P.Xuân Khánh, Q.Ninh Kiều, TP.Cần Thơ",
+    "phone": "0123456789",
+    "open": "8:00",
+    "close": "22:00",
+    "image": "public/images/monan.jpg",
+    "advantage": "Nhân viên nhiệt tình, giá cả hợp lý",
+    "disadvantage": "Hơi đông khách nên phải chờ lâu",
+    "rate": 4.5
+  }
+]
