@@ -9,7 +9,6 @@ import {
   List,
   Modal,
   Form,
-  TimePicker,
   Upload,
   message,
 } from "antd";
@@ -18,40 +17,9 @@ import "./leaflet.css";
 import "leaflet-routing-machine"; // Import thư viện chỉ đường
 import L from "leaflet";
 import "./HomePage.css";
+import UpdatePosition from "../../components/Position/UpdatePosition";
+import InfoModal from "../../components/Position/InfoModal";
 const { TextArea } = Input;
-
-// function RoutingControl({ position, foodPosition }) {
-//   const map = useMap();
-//   const routingControlRef = useRef();
-
-//   useEffect(() => {
-//     if (position && foodPosition) {
-//       // Xóa điều khiển chỉ đường nếu đã tồn tại
-//       if (routingControlRef.current) {
-//         routingControlRef.current.remove();
-//       }
-
-//       // Thêm điều khiển chỉ đường mới
-//       routingControlRef.current = L.Routing.control({
-//         waypoints: [
-//           L.latLng(position[0], position[1]), // Vị trí người dùng
-//           L.latLng(foodPosition[0], foodPosition[1]), // Vị trí nhà thuốc
-//         ],
-//         routeWhileDragging: true,
-//       }).addTo(map);
-//     }
-
-//     // Dọn dẹp khi component unmount
-//     return () => {
-//       if (routingControlRef.current) {
-//         routingControlRef.current.remove();
-//       }
-//     };
-//   }, [position, foodPosition, map]);
-
-//   return null;
-// }
-
 function RoutingControl({ position, foodPosition }) {
   const map = useMap();
   const routingControlRef = useRef();
@@ -93,6 +61,7 @@ function HomePage() {
   const [position, setPosition] = useState(null);
   const [foods, setFoods] = useState([]);
   const [selectedFood, setSelectedFood] = useState(null);
+  const [selectedFoodId, setSelectedFoodId] = useState(null);
   const [error, setError] = useState(null);
   const [openDrawer, setOpenDrawer] = useState(false);
   const [comment, setComment] = useState("");
@@ -114,6 +83,7 @@ function HomePage() {
   const [isModalVisiblePosition, setIsModalVisiblePosition] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isModalVisibleUpdate, setIsModalVisibleUpdate] = useState(false);
+  const [isModalVisibleInfo, setIsModalVisibleInfo] = useState(false);
   //set state cho vi tri
   const [name, setName] = useState("");
   const [lon, setLon] = useState("");
@@ -189,13 +159,13 @@ function HomePage() {
     formData.append("rate", values.rate);
     formData.append("review", values.review);
     formData.append("file", images);
-
     // Gửi dữ liệu đến backend
     fetch("http://localhost:8080/api/geo/create", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("accessToken")}`, // Gửi token để xác thực
       },
+
       body: formData, // Chỉ cần truyền formData
     })
       .then((response) => {
@@ -217,11 +187,6 @@ function HomePage() {
   const handleCancel = () => {
     setIsModalVisiblePosition(false);
   };
-
-  // const onFinish = (values) => {
-  //   handleAddPosition(values);
-  //   handleCancel();
-  // };
   const handleSubmitComment = () => {
     if (!selectedFood || !comment.trim()) return;
 
@@ -239,49 +204,6 @@ function HomePage() {
     setComments(updatedComments);
     setComment(""); // Xóa bình luận sau khi gửi
   };
-  // useEffect(() => {
-  //   // Lấy vị trí hiện tại của người dùng
-  //   if (navigator.geolocation) {
-  //     navigator.geolocation.getCurrentPosition(
-  //       (pos) => {
-  //         setPosition([pos.coords.latitude, pos.coords.longitude]);
-  //       },
-  //       (err) => {
-  //         console.error(err);
-  //         setError("Không thể lấy vị trí của bạn.");
-  //       }
-  //     );
-  //   } else {
-  //     setError("Geolocation không được hỗ trợ trên trình duyệt của bạn.");
-  //   }
-
-  //   // Lấy danh sách nhà thuốc
-  //   fetch("http://localhost:8080/api/geo", {
-  //     method: "GET",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //   })
-  //     .then((response) => {
-  //       if (!response.ok) {
-  //         throw new Error("Mã phản hồi không hợp lệ: " + response.status);
-  //       }
-  //       return response.data;
-  //     })
-  //     .then((data) => {
-  //       const validFoods = data.filter(
-  //         (food) =>
-  //           food.position &&
-  //           Array.isArray(food.position) &&
-  //           food.position.length === 2
-  //       );
-  //       setFoods(validFoods);
-  //     })
-  //     .catch((error) => {
-  //       console.error("Lỗi khi lấy danh sách :", error);
-  //       setError("Không thể lấy danh sách .");
-  //     });
-  // }, []);
   useEffect(() => {
     // Lấy vị trí hiện tại của người dùng
     if (navigator.geolocation) {
@@ -335,7 +257,38 @@ function HomePage() {
   const showVisible = () => {
     setIsModalVisible(true);
   };
+  const handleViewInfo = (item) => {
+    setSelectedFood(item);
+    setIsModalVisibleInfo(true);
+  };
 
+  const handleCloseModal = () => {
+    setIsModalVisibleInfo(false);
+    setSelectedFood(null); // Đặt lại selectedFood khi đóng modal
+  };
+  const handleDelete = (id) => {
+    fetch(`http://localhost:8080/api/geo/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.text();
+      })
+      .then((data) => {
+        console.log("Success:", data);
+        message.success("Xóa địa điểm thành công");
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        message.error("Xóa địa điểm không thành công");
+      });
+  };
+  console.log(isModalVisibleUpdate);
   return (
     <div>
       {error && <p>{error}</p>}
@@ -427,7 +380,7 @@ function HomePage() {
                   <Button
                     onClick={() => {
                       setSelectedFood(food);
-                      onClose(); // Đóng Drawer khi bấm nút "Chỉ đường"
+                      onCloseDrawer(); // Đóng Drawer khi bấm nút "Chỉ đường"
                     }}
                   >
                     Đường đi đến quán
@@ -617,23 +570,48 @@ function HomePage() {
               <List.Item.Meta title={item.name} description={item.address} />
               <Button
                 onClick={() => {
-                  setSelectedFood(item);
-                  setIsModalVisible(false);
-                  setIsModalVisibleUpdate(true);
+                  handleViewInfo(item);
                 }}
               >
                 Xem thông tin
+              </Button>
+              <Button
+                onClick={() => {
+                  setIsModalVisibleUpdate(true);
+                  setSelectedFoodId(item.id);
+                }}
+                style={{ marginLeft: "10px" }}
+              >
+                Cập nhật
+              </Button>
+              <Button
+                onClick={() => handleDelete(item.id)}
+                style={{
+                  marginLeft: "10px",
+                  backgroundColor: "red",
+                  color: "white",
+                }}
+              >
+                Xóa
               </Button>
             </List.Item>
           )}
         />
       </Modal>
-      <Modal
-        title="Thông tin địa điểm"
+      <UpdatePosition
         open={isModalVisibleUpdate}
         onCancel={() => setIsModalVisibleUpdate(false)}
+        title="Cập nhật thông tin"
         footer={null}
-      ></Modal>
+        selectedFoodId={selectedFoodId}
+      />
+      {selectedFood && (
+        <InfoModal
+          visible={isModalVisibleInfo}
+          onClose={handleCloseModal}
+          food={selectedFood}
+        />
+      )}
     </div>
   );
 }
