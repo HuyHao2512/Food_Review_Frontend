@@ -1,24 +1,14 @@
 import React, { useEffect, useState, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import {
-  Button,
-  Drawer,
-  Space,
-  Rate,
-  Input,
-  List,
-  Modal,
-  Form,
-  Upload,
-  message,
-} from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { Button, Drawer, Space, Rate, Input, List, message, Spin } from "antd";
 import "./leaflet.css";
 import "leaflet-routing-machine"; // Import thư viện chỉ đường
 import L from "leaflet";
 import "./HomePage.css";
+import CreatePosition from "../../components/Position/CreatePosition";
 import UpdatePosition from "../../components/Position/UpdatePosition";
 import InfoModal from "../../components/Position/InfoModal";
+import ListPosition from "../../components/Position/ListPosition";
 const { TextArea } = Input;
 function RoutingControl({ position, foodPosition }) {
   const map = useMap();
@@ -35,7 +25,6 @@ function RoutingControl({ position, foodPosition }) {
       if (routingControlRef.current) {
         routingControlRef.current.remove();
       }
-
       // Add new routing control
       routingControlRef.current = L.Routing.control({
         waypoints: [
@@ -45,7 +34,6 @@ function RoutingControl({ position, foodPosition }) {
         routeWhileDragging: true,
       }).addTo(map);
     }
-
     // Cleanup on component unmount
     return () => {
       if (routingControlRef.current) {
@@ -53,14 +41,13 @@ function RoutingControl({ position, foodPosition }) {
       }
     };
   }, [position, foodPosition, map]);
-
   return null;
 }
-
 function HomePage() {
   const [position, setPosition] = useState(null);
   const [foods, setFoods] = useState([]);
   const [selectedFood, setSelectedFood] = useState(null);
+  const [selectedFoodInfo, setSelectedFoodInfo] = useState(null);
   const [selectedFoodId, setSelectedFoodId] = useState(null);
   const [error, setError] = useState(null);
   const [openDrawer, setOpenDrawer] = useState(false);
@@ -81,50 +68,9 @@ function HomePage() {
   ]);
   const [placement, setPlacement] = useState("left");
   const [isModalVisiblePosition, setIsModalVisiblePosition] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isModalVisibleList, setIsModalVisibleList] = useState(false);
   const [isModalVisibleUpdate, setIsModalVisibleUpdate] = useState(false);
   const [isModalVisibleInfo, setIsModalVisibleInfo] = useState(false);
-  //set state cho vi tri
-  const [name, setName] = useState("");
-  const [lon, setLon] = useState("");
-  const [lat, setLat] = useState("");
-  const [address, setAddress] = useState("");
-  const [phone, setPhone] = useState("");
-  const [open, setOpen] = useState("");
-  const [close, setClose] = useState("");
-  const [advantage, setAdvantage] = useState("");
-  const [disadvantage, setDisadvantage] = useState("");
-  const [rate, setRate] = useState("");
-  const [review, setReview] = useState("");
-  const [images, setImages] = useState(null);
-  //handle change
-  const handleChangeName = (e) => {
-    setName(e.target.value);
-  };
-  const handleChangeLon = (e) => {
-    setLon(e.target.value);
-  };
-  const handleChangeLat = (e) => {
-    setLat(e.target.value);
-  };
-  const handleChangeAddress = (e) => {
-    setAddress(e.target.value);
-  };
-  const handleChangePhone = (e) => {
-    setPhone(e.target.value);
-  };
-  const handleChangeOpen = (e) => {
-    setOpen(e.target.value);
-  };
-  const handleChangeClose = (e) => {
-    setClose(e.target.value);
-  };
-  const handleImageChange = (info) => {
-    setImages(info.file);
-  };
-  const handleChangeReview = (e) => {
-    setReview(e.target.value);
-  };
   const StarRating = ({ rating }) => {
     return <Rate allowHalf disabled value={rating} />;
   };
@@ -142,50 +88,6 @@ function HomePage() {
   };
   const showAddPositionModal = () => {
     setIsModalVisiblePosition(true);
-  };
-  const onFinish = (values) => {
-    console.log("Received values of form:", values);
-    const formData = new FormData();
-    // Thêm các giá trị vào FormData
-    formData.append("name", values.name);
-    formData.append("lon", values.lon);
-    formData.append("lat", values.lat);
-    formData.append("address", values.address);
-    formData.append("phone", values.phone);
-    formData.append("open", values.open);
-    formData.append("close", values.close);
-    formData.append("advantage", values.advantage);
-    formData.append("disadvantage", values.disadvantage);
-    formData.append("rate", values.rate);
-    formData.append("review", values.review);
-    formData.append("file", images);
-    // Gửi dữ liệu đến backend
-    fetch("http://localhost:8080/api/geo/create", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("accessToken")}`, // Gửi token để xác thực
-      },
-
-      body: formData, // Chỉ cần truyền formData
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return response.text();
-      })
-      .then((data) => {
-        console.log("Success:", data);
-        message.success("Thêm địa điểm thành công");
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        message.error("Thêm địa điểm không thành công");
-      });
-  };
-
-  const handleCancel = () => {
-    setIsModalVisiblePosition(false);
   };
   const handleSubmitComment = () => {
     if (!selectedFood || !comment.trim()) return;
@@ -219,8 +121,7 @@ function HomePage() {
     } else {
       setError("Geolocation không được hỗ trợ trên trình duyệt của bạn.");
     }
-
-    // Lấy danh sách nhà thuốc
+    // Lấy danh sách
     fetch("http://localhost:8080/api/geo", {
       method: "GET",
       headers: {
@@ -251,20 +152,24 @@ function HomePage() {
   console.log("Vị trí người dùng:", position);
   console.log(
     "Vị trí thực phẩm đã chọn:",
-    selectedFood ? selectedFood.point : null
+    selectedFoodInfo ? selectedFoodInfo.point : null
   );
   const role = JSON.parse(localStorage.getItem("role"));
   const showVisible = () => {
-    setIsModalVisible(true);
+    setIsModalVisibleList(true);
   };
   const handleViewInfo = (item) => {
-    setSelectedFood(item);
+    setSelectedFoodInfo(item);
     setIsModalVisibleInfo(true);
   };
-
+  const handleUpdate = (id) => {
+    setIsModalVisibleUpdate(true);
+    setSelectedFoodId(id);
+  };
   const handleCloseModal = () => {
     setIsModalVisibleInfo(false);
     setSelectedFood(null); // Đặt lại selectedFood khi đóng modal
+    setSelectedFoodInfo(null);
   };
   const handleDelete = (id) => {
     fetch(`http://localhost:8080/api/geo/${id}`, {
@@ -288,7 +193,6 @@ function HomePage() {
         message.error("Xóa địa điểm không thành công");
       });
   };
-  console.log(isModalVisibleUpdate);
   return (
     <div>
       {error && <p>{error}</p>}
@@ -412,192 +316,25 @@ function HomePage() {
           )}
         </MapContainer>
       ) : (
-        <p>Đang lấy vị trí của bạn...</p>
+        <p>
+          <Spin />
+          Đang lấy vị trí của bạn...
+        </p>
       )}
-
-      <Modal
-        title="Thêm Vị Trí"
+      <CreatePosition
         open={isModalVisiblePosition}
-        onCancel={handleCancel}
+        onCancel={() => setIsModalVisiblePosition(false)}
+        title="Thêm vị trí"
         footer={null}
-      >
-        <Form onFinish={onFinish}>
-          <Form.Item
-            name="name"
-            label="Tên địa điểm"
-            rules={[{ required: true, message: "Vui lòng nhập tên vị trí!" }]}
-          >
-            <Input value={name} onChange={handleChangeName} />
-          </Form.Item>
-
-          <Form.Item
-            name="lon"
-            label="Kinh độ"
-            rules={[
-              { required: true, message: "Vui lòng nhập kinh độ!" },
-              { pattern: /^-?\d+(\.\d+)?$/, message: "Kinh độ chỉ chứa số!" },
-            ]} // Bắt buộc nhập
-          >
-            <Input value={lon} onChange={handleChangeLon} />
-          </Form.Item>
-
-          <Form.Item
-            name="lat"
-            label="Vĩ độ"
-            rules={[
-              { required: true, message: "Vui lòng nhập vĩ độ!" },
-              { pattern: /^-?\d+(\.\d+)?$/, message: "Vĩ độ chỉ chứa số!" },
-            ]} // Bắt buộc nhập
-          >
-            <Input value={lat} onChange={handleChangeLat} />
-          </Form.Item>
-
-          <Form.Item
-            name="address"
-            label="Địa Chỉ"
-            rules={[{ required: true, message: "Vui lòng nhập địa chỉ!" }]}
-          >
-            <Input value={address} onChange={handleChangeAddress} />
-          </Form.Item>
-          <Form.Item
-            name="phone"
-            label="Số điện thoại"
-            rules={[
-              { required: true, message: "Vui lòng nhập số điện thoại!" },
-              { pattern: /^[0-9]*$/, message: "Số điện thoại chỉ chứa số!" },
-            ]}
-          >
-            <Input
-              style={{ width: "100%" }}
-              value={phone}
-              onChange={handleChangePhone}
-            />
-          </Form.Item>
-          <Form.Item
-            name="open"
-            label="Thời Gian Mở Cửa"
-            rules={[
-              { required: true, message: "Vui lòng nhập thời gian mở cửa!" },
-            ]}
-          >
-            <Input
-              style={{ width: "100%" }}
-              placeholder="Chọn thời gian mở cửa"
-              value={open}
-              onChange={handleChangeOpen}
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="close"
-            label="Thời Gian Đóng Cửa"
-            rules={[
-              { required: true, message: "Vui lòng nhập thời gian đóng cửa!" },
-            ]}
-          >
-            <Input
-              style={{ width: "100%" }}
-              placeholder="Chọn thời gian đóng cửa"
-              value={close}
-              onChange={handleChangeClose}
-            />
-          </Form.Item>
-          <Form.Item
-            name="advantage"
-            label="Ưu điểm"
-            rules={[{ required: true, message: "Vui lòng nhập ưu điểm!" }]}
-          >
-            <Input
-              value={advantage}
-              onChange={(e) => setAdvantage(e.target.value)}
-            />
-          </Form.Item>
-          <Form.Item
-            name="disadvantage"
-            label="Hạn chế"
-            rules={[{ required: true, message: "Vui lòng nhập hạn chế!" }]}
-          >
-            <Input
-              value={disadvantage}
-              onChange={(e) => setDisadvantage(e.target.value)}
-            />
-          </Form.Item>
-          <Form.Item
-            name="rate"
-            label="Đánh giá"
-            rules={[{ required: true, message: "Vui lòng nhập đánh giá!" }]}
-          >
-            <Input value={rate} onChange={(e) => setRate(e.target.value)} />
-          </Form.Item>
-          <Form.Item
-            name="review"
-            label="Review"
-            rules={[{ required: true, message: "Vui lòng nhập đánh giá!" }]}
-          >
-            <Input value={review} onChange={handleChangeReview} />
-          </Form.Item>
-
-          <Form.Item
-            name="images"
-            label="Hình ảnh"
-            rules={[{ required: true, message: "Vui lòng chọn hình ảnh!" }]}
-          >
-            <Upload
-              listType="picture"
-              beforeUpload={() => false} // Prevent auto-upload
-              onChange={handleImageChange}
-            >
-              <Button icon={<UploadOutlined />}>Thêm ảnh bìa</Button>
-            </Upload>
-          </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit">
-              Thêm
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
-      <Modal
-        open={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
-        title="Danh sách địa điểm"
-        footer={null}
-      >
-        <List
-          dataSource={foods}
-          renderItem={(item) => (
-            <List.Item>
-              <List.Item.Meta title={item.name} description={item.address} />
-              <Button
-                onClick={() => {
-                  handleViewInfo(item);
-                }}
-              >
-                Xem thông tin
-              </Button>
-              <Button
-                onClick={() => {
-                  setIsModalVisibleUpdate(true);
-                  setSelectedFoodId(item.id);
-                }}
-                style={{ marginLeft: "10px" }}
-              >
-                Cập nhật
-              </Button>
-              <Button
-                onClick={() => handleDelete(item.id)}
-                style={{
-                  marginLeft: "10px",
-                  backgroundColor: "red",
-                  color: "white",
-                }}
-              >
-                Xóa
-              </Button>
-            </List.Item>
-          )}
-        />
-      </Modal>
+      />
+      <ListPosition
+        isVisible={isModalVisibleList}
+        onClose={() => setIsModalVisibleList(false)}
+        locations={foods}
+        onViewInfo={handleViewInfo}
+        onUpdate={handleUpdate}
+        onDelete={handleDelete}
+      />
       <UpdatePosition
         open={isModalVisibleUpdate}
         onCancel={() => setIsModalVisibleUpdate(false)}
@@ -605,11 +342,11 @@ function HomePage() {
         footer={null}
         selectedFoodId={selectedFoodId}
       />
-      {selectedFood && (
+      {selectedFoodInfo && (
         <InfoModal
           visible={isModalVisibleInfo}
           onClose={handleCloseModal}
-          food={selectedFood}
+          food={selectedFoodInfo}
         />
       )}
     </div>

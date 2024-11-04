@@ -3,7 +3,7 @@ import { Modal } from "antd";
 
 const InfoModal = ({ visible, onClose, food }) => {
   return (
-    <Modal title={food.name} visible={visible} onCancel={onClose} footer={null}>
+    <Modal title={food.name} open={visible} onCancel={onClose} footer={null}>
       <p>
         <strong>Địa chỉ:</strong> {food.address}
       </p>
@@ -11,10 +11,10 @@ const InfoModal = ({ visible, onClose, food }) => {
         <strong>Số điện thoại:</strong> {food.phone}
       </p>
       <p>
-        <strong>Thời gian mở cửa:</strong> {food.openTime}
+        <strong>Thời gian mở cửa:</strong> {food.open}
       </p>
       <p>
-        <strong>Thời gian đóng cửa:</strong> {food.closeTime}
+        <strong>Thời gian đóng cửa:</strong> {food.close}
       </p>
       <p>
         <strong>Ưu điểm:</strong> {food.advantage}
