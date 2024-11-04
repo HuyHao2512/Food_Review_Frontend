@@ -1,5 +1,10 @@
 import React from "react";
 import { Modal, List, Button } from "antd";
+import {
+  EditOutlined,
+  DeleteOutlined,
+  InfoCircleOutlined,
+} from "@ant-design/icons";
 const ListPosition = ({
   isVisible,
   onClose,
@@ -21,22 +26,28 @@ const ListPosition = ({
           renderItem={(item) => (
             <List.Item>
               <List.Item.Meta title={item.name} description={item.address} />
-              <Button onClick={() => onViewInfo(item)}>Xem thông tin</Button>
+              <Button onClick={() => onViewInfo(item)}>
+                <InfoCircleOutlined />
+              </Button>
               <Button
                 onClick={() => onUpdate(item.id)}
-                style={{ marginLeft: "10px" }}
+                style={{
+                  marginLeft: "10px",
+                  backgroundColor: "orange",
+                  color: "white",
+                }}
               >
-                Cập nhật
+                <EditOutlined />
               </Button>
               <Button
                 onClick={() => onDelete(item.id)}
                 style={{
                   marginLeft: "10px",
-                  backgroundColor: "red",
-                  color: "white",
                 }}
+                type="primary"
+                danger
               >
-                Xóa
+                <DeleteOutlined />
               </Button>
             </List.Item>
           )}

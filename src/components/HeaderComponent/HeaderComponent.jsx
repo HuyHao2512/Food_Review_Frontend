@@ -1,17 +1,9 @@
 // App.jsx
 import { useState } from "react";
-import {
-  Layout,
-  Button,
-  Modal,
-  Form,
-  Input,
-  Tabs,
-  TimePicker,
-  message,
-} from "antd";
+import { Layout, Button, Modal, Form, Input, Tabs, message } from "antd";
 import { useEffect } from "react";
-const { Header, Content } = Layout;
+import { LogoutOutlined, LoginOutlined } from "@ant-design/icons";
+const { Header } = Layout;
 const { TabPane } = Tabs;
 
 function HeaderComponent() {
@@ -152,11 +144,13 @@ function HeaderComponent() {
           {isLoggedIn ? (
             <div>
               <Button type="primary" onClick={handleLogout}>
+                <LogoutOutlined />
                 Đăng xuất
               </Button>
             </div>
           ) : (
             <Button type="default" onClick={handleLogin}>
+              <LoginOutlined />
               Đăng nhập
             </Button>
           )}

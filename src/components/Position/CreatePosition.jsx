@@ -160,7 +160,7 @@ const CreatePosition = ({ open, onCancel }) => {
 
         <Form.Item>
           <Button type="primary" htmlType="submit">
-            Cập nhật
+            Thêm
           </Button>
         </Form.Item>
       </Form>

@@ -9,6 +9,8 @@ import CreatePosition from "../../components/Position/CreatePosition";
 import UpdatePosition from "../../components/Position/UpdatePosition";
 import InfoModal from "../../components/Position/InfoModal";
 import ListPosition from "../../components/Position/ListPosition";
+import DrawerPosition from "../../components/Position/DrawerPosition";
+import ButtonPositon from "../../components/Home/ButtonPositon";
 const { TextArea } = Input;
 function RoutingControl({ position, foodPosition }) {
   const map = useMap();
@@ -79,6 +81,10 @@ function HomePage() {
   };
   const onCloseDrawer = () => {
     setOpenDrawer(false);
+  };
+  const handleDirectionClick = (food) => {
+    setSelectedFood(food);
+    onCloseDrawer();
   };
   const onChange = (e) => {
     setPlacement(e.target.value);
@@ -198,15 +204,10 @@ function HomePage() {
       {error && <p>{error}</p>}
       <div>
         {role === "ADMIN" && (
-          <div style={{ right: "5px" }}>
-            <Button type="default" onClick={showAddPositionModal}>
-              Thêm địa điểm
-            </Button>
-            &nbsp;&nbsp;&nbsp;
-            <Button type="default" onClick={showVisible}>
-              Danh sách địa điểm
-            </Button>
-          </div>
+          <ButtonPositon
+            onAddLocation={showAddPositionModal}
+            onShowList={showVisible}
+          />
         )}
       </div>
       {position ? (
@@ -239,72 +240,17 @@ function HomePage() {
                     Xem thông tin quán
                   </Button>
                 </Space>
-                <Drawer
-                  title={food.name}
-                  placement={placement}
-                  closable={false}
-                  onClose={onCloseDrawer}
+                <DrawerPosition
+                  food={food}
                   open={openDrawer}
-                  key={placement}
-                >
-                  <img src={food.images} className="img-des" />
-                  <br />
-                  <br />
-                  <br />
-                  <p>
-                    Đánh giá: <StarRating rating={food.rate} />
-                  </p>
-                  <p>Địa chỉ: {food.address}</p>
-                  <p>Giờ mở chưa: {food.open}</p>
-                  <p>Giờ đóng cửa: {food.close}</p>
-                  <p>Số điện thoại: {food.phone}</p>
-                  <p>Ưu điểm: {food.advantage}</p>
-                  <p>Hạn chế: {food.disadvantage}</p>
-                  {/* Phần bình luận */}
-                  <hr />
-                  <h3>Thêm bình luận</h3>
-                  <TextArea
-                    value={comment}
-                    onChange={handleCommentChange}
-                    placeholder="Nhập bình luận..."
-                    rows={4}
-                  />
-                  <br />
-                  <br />
-                  <Rate />
-                  <br />
-                  <Button
-                    onClick={handleSubmitComment}
-                    type="primary"
-                    style={{ marginTop: "10px" }}
-                  >
-                    Gửi bình luận
-                  </Button>
-                  &nbsp;&nbsp;&nbsp;
-                  <Button
-                    onClick={() => {
-                      setSelectedFood(food);
-                      onCloseDrawer(); // Đóng Drawer khi bấm nút "Chỉ đường"
-                    }}
-                  >
-                    Đường đi đến quán
-                  </Button>
-                  <hr />
-                  <h3>Bình luận:</h3>
-                  <List
-                    dataSource={comments}
-                    renderItem={(item) => (
-                      <List.Item>
-                        <List.Item.Meta
-                          title={item.username}
-                          description={item.timestamp}
-                        />
-                        {item.comment}
-                        <Rate value={item.rate} />
-                      </List.Item>
-                    )}
-                  />
-                </Drawer>
+                  placement={placement}
+                  onClose={onCloseDrawer}
+                  comment={comment}
+                  onCommentChange={handleCommentChange}
+                  onSubmitComment={handleSubmitComment}
+                  comments={comments[food.id] || []}
+                  onDirectionClick={() => handleDirectionClick(food)}
+                />
               </Popup>
             </Marker>
           ))}
