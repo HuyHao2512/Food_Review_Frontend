@@ -1,0 +1,16 @@
+.title {
+  color: black;
+  font-size: 34px;
+  font-weight: 600;
+  font-family: "Dancing Script", cursive;
+}
+
+.title-letter {
+  font-weight: 400;
+  margin-right: 4px;
+  color: rgba(255, 99, 71, 0.8);
+  font-family: "Pacifico", cursive;
+}
+.title-letter:nth-child(2) {
+  color: rgba(0, 102, 204, 0.8); /* Màu xanh dương với độ trong suốt */
+}

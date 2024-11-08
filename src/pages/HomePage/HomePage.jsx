@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import { Button, Drawer, Space, Rate, Input, List, message, Spin } from "antd";
+import { Button, Space, Rate, message, Spin } from "antd";
 import "./leaflet.css";
 import "leaflet-routing-machine"; // Import thư viện chỉ đường
 import L from "leaflet";
@@ -11,11 +11,9 @@ import InfoModal from "../../components/Position/InfoModal";
 import ListPosition from "../../components/Position/ListPosition";
 import DrawerPosition from "../../components/Position/DrawerPosition";
 import ButtonPositon from "../../components/Home/ButtonPositon";
-const { TextArea } = Input;
 function RoutingControl({ position, foodPosition }) {
   const map = useMap();
   const routingControlRef = useRef();
-
   useEffect(() => {
     if (
       position &&
@@ -199,6 +197,7 @@ function HomePage() {
         message.error("Xóa địa điểm không thành công");
       });
   };
+  console.log(selectedFood);
   return (
     <div>
       {error && <p>{error}</p>}
@@ -221,7 +220,6 @@ function HomePage() {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
           />
-
           <Marker position={position}>
             <Popup>Bạn đang ở đây</Popup>
           </Marker>

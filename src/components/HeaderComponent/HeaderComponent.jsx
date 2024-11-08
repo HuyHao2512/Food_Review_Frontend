@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Layout, Button, Modal, Form, Input, Tabs, message } from "antd";
 import { useEffect } from "react";
 import { LogoutOutlined, LoginOutlined } from "@ant-design/icons";
+import "./Header.css";
 const { Header } = Layout;
 const { TabPane } = Tabs;
 
@@ -139,7 +140,12 @@ function HeaderComponent() {
           backgroundColor: "#96d6ff",
         }}
       >
-        <h1 style={{ color: "white" }}>Ứng Dụng Của Tôi</h1>
+        <h1 class="title">
+          <span class="title-letter">F</span>
+          ood
+          <span class="title-letter">R</span>
+          eview
+        </h1>
         <div>
           {isLoggedIn ? (
             <div>

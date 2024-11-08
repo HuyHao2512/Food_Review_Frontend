@@ -2,11 +2,43 @@ import React from "react";
 import { useState } from "react";
 import { Modal, Form, Input, Button, message, Upload } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMapEvents,
+} from "react-leaflet";
+const LocationMarker = ({ setLat, setLon }) => {
+  const [positionAdd, setPositionAdd] = useState(null);
+
+  useMapEvents({
+    click(e) {
+      const { lat, lng } = e.latlng;
+      const roundedLat = parseFloat(lat.toFixed(6)); // Làm tròn đến 6 chữ số thập phân
+      const roundedLng = parseFloat(lng.toFixed(6)); // Làm tròn đến 6 chữ số thập phân
+      setPositionAdd(e.latlng); // Cập nhật vị trí của Marker
+      setLat(roundedLat); // Cập nhật vĩ độ vào state của CreatePosition
+      setLon(roundedLng); // Cập nhật kinh độ vào state của CreatePosition
+      map.flyTo([roundedLat, roundedLng], map.getZoom()); // Zoom vào vị trí đã chọn
+    },
+  });
+
+  return positionAdd === null ? null : (
+    <Marker position={positionAdd}>
+      <Popup>
+        Kinh độ: {positionAdd.lng.toFixed(5)} <br />
+        Vĩ độ: {positionAdd.lat.toFixed(5)}
+      </Popup>
+    </Marker>
+  );
+};
 
 const UpdatePosition = ({ open, onCancel, selectedFoodId }) => {
   const [form] = Form.useForm();
   const [images, setImages] = useState(null);
-
+  const [lat, setLat] = useState(null); // State lưu vĩ độ
+  const [lon, setLon] = useState(null); // State lưu kinh độ
   const handleImageChange = (info) => {
     setImages(info.file);
   };
@@ -15,8 +47,8 @@ const UpdatePosition = ({ open, onCancel, selectedFoodId }) => {
     console.log("Received values of form:", values);
     const formData = new FormData();
     formData.append("name", values.name);
-    formData.append("lon", values.lon);
-    formData.append("lat", values.lat);
+    formData.append("lon", lon); // Gửi kinh độ từ state
+    formData.append("lat", lat); // Gửi vĩ độ từ state
     formData.append("address", values.address);
     formData.append("phone", values.phone);
     formData.append("open", values.open);
@@ -30,7 +62,7 @@ const UpdatePosition = ({ open, onCancel, selectedFoodId }) => {
     }
     console.log(selectedFoodId);
     const id = selectedFoodId;
-
+    const loadingMessage = message.loading("Đang cập nhật địa điểm...", 0);
     fetch(`http://localhost:8080/api/geo/${id}`, {
       method: "PUT",
       headers: {
@@ -46,16 +78,16 @@ const UpdatePosition = ({ open, onCancel, selectedFoodId }) => {
       })
       .then((data) => {
         console.log("Success:", data);
+        loadingMessage();
         message.success("Cập nhật địa điểm thành công");
         onCancel(); // Đóng modal
       })
       .catch((error) => {
         console.error("Error:", error);
+        loadingMessage();
         message.error("Cập nhật địa điểm không thành công");
       });
   };
-
-  // Kiểm tra selectedFood có hợp lệ không
 
   return (
     <Modal
@@ -72,23 +104,6 @@ const UpdatePosition = ({ open, onCancel, selectedFoodId }) => {
         >
           <Input />
         </Form.Item>
-
-        <Form.Item
-          name="lon"
-          label="Kinh độ"
-          rules={[{ required: true, message: "Vui lòng nhập kinh độ!" }]}
-        >
-          <Input />
-        </Form.Item>
-
-        <Form.Item
-          name="lat"
-          label="Vĩ độ"
-          rules={[{ required: true, message: "Vui lòng nhập vĩ độ!" }]}
-        >
-          <Input />
-        </Form.Item>
-
         <Form.Item
           name="address"
           label="Địa Chỉ"
@@ -168,7 +183,20 @@ const UpdatePosition = ({ open, onCancel, selectedFoodId }) => {
             <Button icon={<UploadOutlined />}>Thêm ảnh bìa</Button>
           </Upload>
         </Form.Item>
-
+        <div style={{ height: "300px", marginBottom: "16px" }}>
+          <MapContainer
+            center={[10.5199938, 105.3233821]}
+            zoom={12}
+            scrollWheelZoom={false}
+            style={{ height: "100%" }}
+          >
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
+            />
+            <LocationMarker setLat={setLat} setLon={setLon} />
+          </MapContainer>
+        </div>
         <Form.Item>
           <Button type="primary" htmlType="submit">
             Cập nhật
