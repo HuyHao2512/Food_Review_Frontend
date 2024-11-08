@@ -49,6 +49,7 @@ function HomePage() {
   const [selectedFood, setSelectedFood] = useState(null);
   const [selectedFoodInfo, setSelectedFoodInfo] = useState(null);
   const [selectedFoodId, setSelectedFoodId] = useState(null);
+  const [selectedFoodUpdate, setSelectedFoodUpdate] = useState(null);
   const [error, setError] = useState(null);
   const [openDrawer, setOpenDrawer] = useState(false);
   const [comment, setComment] = useState("");
@@ -169,6 +170,7 @@ function HomePage() {
   const handleUpdate = (id) => {
     setIsModalVisibleUpdate(true);
     setSelectedFoodId(id);
+    setSelectedFoodUpdate(foods.find((food) => food.id === id));
   };
   const handleCloseModal = () => {
     setIsModalVisibleInfo(false);
@@ -213,7 +215,7 @@ function HomePage() {
         <MapContainer
           center={position}
           zoom={15}
-          style={{ height: "100vh" }}
+          style={{ height: "93vh" }}
           id="map"
         >
           <TileLayer
@@ -285,6 +287,7 @@ function HomePage() {
         title="Cập nhật thông tin"
         footer={null}
         selectedFoodId={selectedFoodId}
+        selectedFoodUpdate={selectedFoodUpdate}
       />
       {selectedFoodInfo && (
         <InfoModal

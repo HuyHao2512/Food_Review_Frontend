@@ -1,5 +1,5 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal, Form, Input, Button, message, Upload } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import {
@@ -34,7 +34,12 @@ const LocationMarker = ({ setLat, setLon }) => {
   );
 };
 
-const UpdatePosition = ({ open, onCancel, selectedFoodId }) => {
+const UpdatePosition = ({
+  open,
+  onCancel,
+  selectedFoodId,
+  selectedFoodUpdate,
+}) => {
   const [form] = Form.useForm();
   const [images, setImages] = useState(null);
   const [lat, setLat] = useState(null); // State lưu vĩ độ
@@ -42,7 +47,21 @@ const UpdatePosition = ({ open, onCancel, selectedFoodId }) => {
   const handleImageChange = (info) => {
     setImages(info.file);
   };
-
+  useEffect(() => {
+    if (selectedFoodUpdate) {
+      form.setFieldsValue({
+        name: selectedFoodUpdate.name,
+        address: selectedFoodUpdate.address,
+        phone: selectedFoodUpdate.phone,
+        rate: selectedFoodUpdate.rate,
+        open: selectedFoodUpdate.open,
+        close: selectedFoodUpdate.close,
+        advantage: selectedFoodUpdate.advantage,
+        disadvantage: selectedFoodUpdate.disadvantage,
+        review: selectedFoodUpdate.review,
+      });
+    }
+  }, [selectedFoodUpdate, form]);
   const onFinishUpdate = (values) => {
     console.log("Received values of form:", values);
     const formData = new FormData();

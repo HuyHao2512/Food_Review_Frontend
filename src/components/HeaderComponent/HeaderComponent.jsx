@@ -1,4 +1,3 @@
-// App.jsx
 import { useState } from "react";
 import { Layout, Button, Modal, Form, Input, Tabs, message } from "antd";
 import { useEffect } from "react";
@@ -39,6 +38,7 @@ function HeaderComponent() {
         setIsLoggedIn(true);
         setIsModalVisible(false);
         message.success("Đăng nhập thành công!");
+        window.location.reload();
       })
       .catch((error) => {
         console.error("Lỗi:", error);
@@ -57,9 +57,10 @@ function HeaderComponent() {
     if (values.password !== values.confirm) {
       // Thông báo lỗi nếu mật khẩu không trùng nhau
       console.error("Mật khẩu và xác nhận mật khẩu không khớp!");
+      message.error("Mật khẩu và xác nhận mật khẩu không khớp!");
       return; // Dừng hàm nếu mật khẩu không khớp
     }
-
+    const loading = message.loading("Đang xử lý đăng ký...", 0);
     // Gửi yêu cầu đăng ký đến backend
     fetch("http://localhost:8080/api/auth/register", {
       method: "POST",
@@ -79,11 +80,13 @@ function HeaderComponent() {
         return response.json();
       })
       .then((data) => {
+        loading(); // Ẩn loading
         console.log("Đăng ký thành công:", data);
         message.success("Bạn đã đăng ký thành công, vui lòng kiểm tra Email");
         setIsModalVisible(false); // Đóng modal khi đăng ký thành công
       })
       .catch((error) => {
+        loading(); // Ẩn loading
         console.error("Lỗi:", error);
         // Thông báo cho người dùng về lỗi đăng ký
         message.error("Có lỗi khi đăng ký");
@@ -123,6 +126,7 @@ function HeaderComponent() {
         setIsLoggedIn(false);
         message.success("Đã đăng xuất thành công");
         console.log("Đã đăng xuất thành công");
+        window.location.reload();
       })
       .catch((error) => {
         console.error("Lỗi:", error);
@@ -146,6 +150,7 @@ function HeaderComponent() {
           <span class="title-letter">R</span>
           eview
         </h1>
+
         <div>
           {isLoggedIn ? (
             <div>
