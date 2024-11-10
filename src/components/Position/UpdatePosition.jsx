@@ -20,7 +20,9 @@ const LocationMarker = ({ setLat, setLon }) => {
       setPositionAdd(e.latlng); // Cập nhật vị trí của Marker
       setLat(roundedLat); // Cập nhật vĩ độ vào state của CreatePosition
       setLon(roundedLng); // Cập nhật kinh độ vào state của CreatePosition
-      map.flyTo([roundedLat, roundedLng], map.getZoom()); // Zoom vào vị trí đã chọn
+      if (map && map.getZoom) {
+        map.flyTo([roundedLat, roundedLng], map.getZoom()); // Zoom vào vị trí đã chọn
+      }
     },
   });
 
@@ -47,18 +49,17 @@ const UpdatePosition = ({
   const handleImageChange = (info) => {
     setImages(info.file);
   };
+
   useEffect(() => {
     if (selectedFoodUpdate) {
       form.setFieldsValue({
         name: selectedFoodUpdate.name,
         address: selectedFoodUpdate.address,
         phone: selectedFoodUpdate.phone,
-        rate: selectedFoodUpdate.rate,
         open: selectedFoodUpdate.open,
         close: selectedFoodUpdate.close,
         advantage: selectedFoodUpdate.advantage,
         disadvantage: selectedFoodUpdate.disadvantage,
-        review: selectedFoodUpdate.review,
       });
     }
   }, [selectedFoodUpdate, form]);
@@ -74,11 +75,7 @@ const UpdatePosition = ({
     formData.append("close", values.close);
     formData.append("advantage", values.advantage);
     formData.append("disadvantage", values.disadvantage);
-    formData.append("rate", values.rate);
-    formData.append("review", values.review);
-    if (images) {
-      formData.append("files", images);
-    }
+    formData.append("files", images);
     console.log(selectedFoodId);
     const id = selectedFoodId;
     const loadingMessage = message.loading("Đang cập nhật địa điểm...", 0);
@@ -174,21 +171,6 @@ const UpdatePosition = ({
         >
           <Input />
         </Form.Item>
-
-        <Form.Item
-          name="rate"
-          label="Đánh giá"
-          rules={[{ required: true, message: "Vui lòng nhập đánh giá!" }]}
-        >
-          <Input />
-        </Form.Item>
-        <Form.Item
-          name="review"
-          label="review"
-          rules={[{ required: true, message: "Vui lòng nhập review!" }]}
-        >
-          <Input />
-        </Form.Item>
         <Form.Item
           name="images"
           label="Hình ảnh"
@@ -196,7 +178,7 @@ const UpdatePosition = ({
         >
           <Upload
             listType="picture"
-            beforeUpload={() => false} // Prevent auto-upload
+            beforeUpload={() => false}
             onChange={handleImageChange}
           >
             <Button icon={<UploadOutlined />}>Thêm ảnh bìa</Button>

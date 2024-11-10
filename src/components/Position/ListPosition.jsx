@@ -37,7 +37,7 @@ const ListPosition = ({
                 <InfoCircleOutlined />
               </Button>
               <Button
-                onClick={() => onUpdate(item.id)}
+                onClick={() => onUpdate(item.id, item.lat, item.lon)}
                 style={{
                   marginLeft: "10px",
                   backgroundColor: "orange",

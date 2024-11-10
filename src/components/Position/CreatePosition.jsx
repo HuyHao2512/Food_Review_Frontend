@@ -57,8 +57,6 @@ const CreatePosition = ({ open, onCancel }) => {
     formData.append("close", values.close);
     formData.append("advantage", values.advantage);
     formData.append("disadvantage", values.disadvantage);
-    formData.append("rate", values.rate);
-    formData.append("review", values.review);
     formData.append("file", images);
     const loadingMessage = message.loading("Đang thêm địa điểm...", 0);
     fetch("http://localhost:8080/api/geo/create", {
@@ -144,21 +142,6 @@ const CreatePosition = ({ open, onCancel }) => {
           name="disadvantage"
           label="Hạn chế"
           rules={[{ required: true, message: "Vui lòng nhập hạn chế!" }]}
-        >
-          <Input />
-        </Form.Item>
-
-        <Form.Item
-          name="rate"
-          label="Đánh giá"
-          rules={[{ required: true, message: "Vui lòng nhập đánh giá!" }]}
-        >
-          <Input />
-        </Form.Item>
-        <Form.Item
-          name="review"
-          label="review"
-          rules={[{ required: true, message: "Vui lòng nhập review!" }]}
         >
           <Input />
         </Form.Item>

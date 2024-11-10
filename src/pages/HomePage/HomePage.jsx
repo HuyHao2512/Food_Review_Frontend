@@ -11,6 +11,9 @@ import InfoModal from "../../components/Position/InfoModal";
 import ListPosition from "../../components/Position/ListPosition";
 import DrawerPosition from "../../components/Position/DrawerPosition";
 import ButtonPositon from "../../components/Home/ButtonPositon";
+import ButtonFilter from "../../components/Home/ButtonFilter";
+import RatingFilter from "../../components/Filter/RatingFilter";
+import DistanceFilter from "../../components/Filter/DistanceFilter";
 function RoutingControl({ position, foodPosition }) {
   const map = useMap();
   const routingControlRef = useRef();
@@ -52,30 +55,14 @@ function HomePage() {
   const [selectedFoodUpdate, setSelectedFoodUpdate] = useState(null);
   const [error, setError] = useState(null);
   const [openDrawer, setOpenDrawer] = useState(false);
-  const [comment, setComment] = useState("");
-  const [comments, setComments] = useState([
-    {
-      username: "Người dùng 1",
-      comment: "Nhà thuốc này rất tốt và uy tín.",
-      rate: 5,
-      timestamp: new Date().toLocaleString(),
-    },
-    {
-      username: "Người dùng 2",
-      comment: "Dịch vụ ổn nhưng có thể cải thiện thêm.",
-      rate: 3,
-      timestamp: new Date().toLocaleString(),
-    },
-  ]);
   const [placement, setPlacement] = useState("left");
   const [isModalVisiblePosition, setIsModalVisiblePosition] = useState(false);
   const [isModalVisibleList, setIsModalVisibleList] = useState(false);
   const [isModalVisibleUpdate, setIsModalVisibleUpdate] = useState(false);
   const [isModalVisibleInfo, setIsModalVisibleInfo] = useState(false);
-  const StarRating = ({ rating }) => {
-    return <Rate allowHalf disabled value={rating} />;
-  };
-  const showDrawer = () => {
+  const [isModalRating, setIsModalRating] = useState(false);
+  const [isModalDistance, setIsModalDistance] = useState(false);
+  const showDrawer = (id) => {
     setOpenDrawer(true);
   };
   const onCloseDrawer = () => {
@@ -88,28 +75,8 @@ function HomePage() {
   const onChange = (e) => {
     setPlacement(e.target.value);
   };
-  const handleCommentChange = (e) => {
-    setComment(e.target.value);
-  };
   const showAddPositionModal = () => {
     setIsModalVisiblePosition(true);
-  };
-  const handleSubmitComment = () => {
-    if (!selectedFood || !comment.trim()) return;
-
-    const newComment = {
-      username: "Người dùng", // Hoặc lấy từ người dùng đăng nhập
-      comment: comment,
-      timestamp: new Date().toISOString(), // Thời gian hiện tại
-    };
-
-    const updatedComments = {
-      ...comments,
-      [selectedFood.id]: [...(comments[selectedFood.id] || []), newComment],
-    };
-
-    setComments(updatedComments);
-    setComment(""); // Xóa bình luận sau khi gửi
   };
   useEffect(() => {
     // Lấy vị trí hiện tại của người dùng
@@ -154,11 +121,6 @@ function HomePage() {
         setError("Không thể lấy danh sách.");
       });
   }, []);
-  console.log("Vị trí người dùng:", position);
-  console.log(
-    "Vị trí thực phẩm đã chọn:",
-    selectedFoodInfo ? selectedFoodInfo.point : null
-  );
   const role = JSON.parse(localStorage.getItem("role"));
   const showVisible = () => {
     setIsModalVisibleList(true);
@@ -167,7 +129,7 @@ function HomePage() {
     setSelectedFoodInfo(item);
     setIsModalVisibleInfo(true);
   };
-  const handleUpdate = (id) => {
+  const handleUpdate = (id, lon, lat) => {
     setIsModalVisibleUpdate(true);
     setSelectedFoodId(id);
     setSelectedFoodUpdate(foods.find((food) => food.id === id));
@@ -177,6 +139,13 @@ function HomePage() {
     setSelectedFood(null); // Đặt lại selectedFood khi đóng modal
     setSelectedFoodInfo(null);
   };
+  const showDistance = () => {
+    setIsModalDistance(true);
+  };
+  const showRating = () => {
+    setIsModalRating(true);
+  };
+  console.log(isModalRating);
   const handleDelete = (id) => {
     fetch(`http://localhost:8080/api/geo/${id}`, {
       method: "DELETE",
@@ -209,6 +178,9 @@ function HomePage() {
             onAddLocation={showAddPositionModal}
             onShowList={showVisible}
           />
+        )}
+        {role === "USER" && (
+          <ButtonFilter onDistance={showDistance} onRating={showRating} />
         )}
       </div>
       {position ? (
@@ -245,10 +217,6 @@ function HomePage() {
                   open={openDrawer}
                   placement={placement}
                   onClose={onCloseDrawer}
-                  comment={comment}
-                  onCommentChange={handleCommentChange}
-                  onSubmitComment={handleSubmitComment}
-                  comments={comments[food.id] || []}
                   onDirectionClick={() => handleDirectionClick(food)}
                 />
               </Popup>
@@ -296,6 +264,14 @@ function HomePage() {
           food={selectedFoodInfo}
         />
       )}
+      <RatingFilter
+        open={isModalRating}
+        onCancel={() => setIsModalRating(false)}
+      />
+      <DistanceFilter
+        open={isModalDistance}
+        onCancel={() => setIsModalDistance(false)}
+      />
     </div>
   );
 }

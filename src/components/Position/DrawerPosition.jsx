@@ -1,17 +1,22 @@
 import React from "react";
-import { Drawer, Button, List, Space, Rate, Input } from "antd";
+import { Drawer, Button, Rate, Input } from "antd";
+import { useState, useEffect } from "react";
+import Comment from "./Comment";
+import CommentList from "./CommentList";
 const { TextArea } = Input;
 const DrawerPosition = ({
   food,
   open,
   placement,
   onClose,
-  comment,
-  onCommentChange,
-  onSubmitComment,
-  comments,
   onDirectionClick,
 }) => {
+  const [idComment, setIdComment] = useState("");
+  useEffect(() => {
+    if (food?.id) {
+      setIdComment(food.id);
+    }
+  }, [food]);
   return (
     <Drawer
       title={food?.name}
@@ -28,46 +33,17 @@ const DrawerPosition = ({
         Đánh giá: <Rate allowHalf disabled value={food.rate} />
       </p>
       <p>Địa chỉ: {food.address}</p>
-      <p>Giờ mở chưa: {food.open}</p>
+      <Button onClick={onDirectionClick}>Đường đi đến quán</Button>
+      <br />
+      <br />
+      <p>Giờ mở cửa: {food.open}</p>
       <p>Giờ đóng cửa: {food.close}</p>
       <p>Số điện thoại: {food.phone}</p>
       <p>Ưu điểm: {food.advantage}</p>
       <p>Hạn chế: {food.disadvantage}</p>
       <hr />
-      <h3>Thêm bình luận</h3>
-      <TextArea
-        value={comment}
-        onChange={onCommentChange}
-        placeholder="Nhập bình luận..."
-        rows={4}
-      />
-      <br />
-      <Rate />
-      <br />
-      <Button
-        onClick={onSubmitComment}
-        type="primary"
-        style={{ marginTop: "10px" }}
-      >
-        Gửi bình luận
-      </Button>
-      &nbsp;&nbsp;&nbsp;
-      <Button onClick={onDirectionClick}>Đường đi đến quán</Button>
-      <hr />
-      <h3>Bình luận:</h3>
-      <List
-        dataSource={comments}
-        renderItem={(item) => (
-          <List.Item>
-            <List.Item.Meta
-              title={item.username}
-              description={item.timestamp}
-            />
-            {item.comment}
-            <Rate value={item.rate} />
-          </List.Item>
-        )}
-      />
+      <Comment idComment={idComment} />
+      <CommentList positionId={idComment} /> {/* Add CommentList here */}
     </Drawer>
   );
 };

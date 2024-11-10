@@ -213,7 +213,7 @@ function HeaderComponent() {
                 <Input />
               </Form.Item>
               <Form.Item
-                label="Tài khoản"
+                label="Email"
                 name="email"
                 rules={[{ required: true, message: "Vui lòng nhập email!" }]}
               >

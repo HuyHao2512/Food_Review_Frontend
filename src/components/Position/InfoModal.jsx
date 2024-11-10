@@ -25,9 +25,6 @@ const InfoModal = ({ visible, onClose, food }) => {
       <p>
         <strong>Đánh giá:</strong> {food.rate}
       </p>
-      <p>
-        <strong>Đánh giá chi tiết:</strong> {food.review}
-      </p>
       {food.images && (
         <img src={food.images} alt={food.name} style={{ width: "100%" }} />
       )}
