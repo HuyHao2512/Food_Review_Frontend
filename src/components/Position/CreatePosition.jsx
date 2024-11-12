@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Modal, Form, Input, Button, message, Upload } from "antd";
+import { Modal, Form, Input, Button, message, Upload, TimePicker } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import {
   MapContainer,
@@ -7,22 +7,23 @@ import {
   Marker,
   Popup,
   useMapEvents,
+  useMap,
 } from "react-leaflet";
+import moment from "moment";
 
 const LocationMarker = ({ setLat, setLon }) => {
   const [positionAdd, setPositionAdd] = useState(null);
+  const map = useMap(); // Lấy bản đồ hiện tại
 
   useMapEvents({
     click(e) {
       const { lat, lng } = e.latlng;
-      const roundedLat = parseFloat(lat.toFixed(6)); // Làm tròn đến 6 chữ số thập phân
-      const roundedLng = parseFloat(lng.toFixed(6)); // Làm tròn đến 6 chữ số thập phân
-      setPositionAdd(e.latlng); // Cập nhật vị trí của Marker
-      setLat(roundedLat); // Cập nhật vĩ độ vào state của CreatePosition
-      setLon(roundedLng); // Cập nhật kinh độ vào state của CreatePosition
-      if (map && map.getZoom) {
-        map.flyTo([roundedLat, roundedLng], map.getZoom()); // Zoom vào vị trí đã chọn
-      }
+      const roundedLat = parseFloat(lat.toFixed(6));
+      const roundedLng = parseFloat(lng.toFixed(6));
+      setPositionAdd(e.latlng);
+      setLat(roundedLat);
+      setLon(roundedLng);
+      map.flyTo([roundedLat, roundedLng], map.getZoom()); // Zoom vào vị trí đã chọn
     },
   });
 
@@ -39,8 +40,8 @@ const LocationMarker = ({ setLat, setLon }) => {
 const CreatePosition = ({ open, onCancel }) => {
   const [form] = Form.useForm();
   const [images, setImages] = useState(null);
-  const [lat, setLat] = useState(null); // State lưu vĩ độ
-  const [lon, setLon] = useState(null); // State lưu kinh độ
+  const [lat, setLat] = useState(null);
+  const [lon, setLon] = useState(null);
 
   const handleImageChange = (info) => {
     setImages(info.file);
@@ -49,16 +50,21 @@ const CreatePosition = ({ open, onCancel }) => {
   const onFinishCreate = (values) => {
     const formData = new FormData();
     formData.append("name", values.name);
-    formData.append("lon", lon); // Gửi kinh độ từ state
-    formData.append("lat", lat); // Gửi vĩ độ từ state
+    formData.append("lon", lon);
+    formData.append("lat", lat);
     formData.append("address", values.address);
     formData.append("phone", values.phone);
-    formData.append("open", values.open);
-    formData.append("close", values.close);
+
+    // Định dạng thời gian mở và đóng cửa
+    formData.append("open", moment(values.open).format("HH:mm"));
+    formData.append("close", moment(values.close).format("HH:mm"));
+
     formData.append("advantage", values.advantage);
     formData.append("disadvantage", values.disadvantage);
     formData.append("file", images);
+
     const loadingMessage = message.loading("Đang thêm địa điểm...", 0);
+
     fetch("http://localhost:8080/api/geo/create", {
       method: "POST",
       headers: {
@@ -72,17 +78,19 @@ const CreatePosition = ({ open, onCancel }) => {
         }
         return response.text();
       })
-      .then((data) => {
+      .then(() => {
         loadingMessage();
         message.success("Thêm địa điểm thành công");
+        window.location.reload(); // Load lại trang để hiển thị địa điểm mới
+        form.resetFields(); // Reset lại form
+        onCancel(); // Đóng modal
       })
-      .catch((error) => {
+      .catch(() => {
         loadingMessage();
         message.error("Thêm địa điểm không thành công");
       });
   };
-  console.log("Vĩ độ:", lat);
-  console.log("Kinh độ:", lon);
+
   return (
     <Modal title="Thêm vị trí" open={open} onCancel={onCancel} footer={null}>
       <Form form={form} onFinish={onFinishCreate}>
@@ -117,7 +125,7 @@ const CreatePosition = ({ open, onCancel }) => {
             { required: true, message: "Vui lòng nhập thời gian mở cửa!" },
           ]}
         >
-          <Input />
+          <TimePicker format="HH:mm" />
         </Form.Item>
 
         <Form.Item
@@ -127,7 +135,7 @@ const CreatePosition = ({ open, onCancel }) => {
             { required: true, message: "Vui lòng nhập thời gian đóng cửa!" },
           ]}
         >
-          <Input />
+          <TimePicker format="HH:mm" />
         </Form.Item>
 
         <Form.Item
@@ -145,6 +153,7 @@ const CreatePosition = ({ open, onCancel }) => {
         >
           <Input />
         </Form.Item>
+
         <Form.Item
           name="images"
           label="Hình ảnh"
@@ -159,17 +168,16 @@ const CreatePosition = ({ open, onCancel }) => {
           </Upload>
         </Form.Item>
 
-        {/* Bản đồ để chọn vị trí */}
         <div style={{ height: "300px", marginBottom: "16px" }}>
           <MapContainer
-            center={[10.5199938, 105.3233821]}
-            zoom={12}
+            center={[10.03104, 105.76946]}
+            zoom={15}
             scrollWheelZoom={false}
             style={{ height: "100%" }}
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
+              attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a>'
             />
             <LocationMarker setLat={setLat} setLon={setLon} />
           </MapContainer>

@@ -30,6 +30,7 @@ const ListPosition = ({
             align: "center",
             position: "bottom",
           }}
+          locale={{ emptyText: "Không có dữ liệu để hiển thị" }}
           renderItem={(item) => (
             <List.Item>
               <List.Item.Meta title={item.name} description={item.address} />

@@ -1,5 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMap,
+  Circle,
+} from "react-leaflet";
 import { Button, Space, Rate, message, Spin } from "antd";
 import "./leaflet.css";
 import "leaflet-routing-machine"; // Import thư viện chỉ đường
@@ -62,6 +69,7 @@ function HomePage() {
   const [isModalVisibleInfo, setIsModalVisibleInfo] = useState(false);
   const [isModalRating, setIsModalRating] = useState(false);
   const [isModalDistance, setIsModalDistance] = useState(false);
+  const [radius, setRadius] = useState(0);
   const showDrawer = (id) => {
     setOpenDrawer(true);
   };
@@ -104,6 +112,7 @@ function HomePage() {
         if (!response.ok) {
           throw new Error("Mã phản hồi không hợp lệ: " + response.status);
         }
+        console.log(response);
         return response.json(); // Chuyển đổi phản hồi thành JSON
       })
       .then((data) => {
@@ -115,6 +124,7 @@ function HomePage() {
             food.point.length === 2
         );
         setFoods(validFoods);
+        console.log("Danh sách địa điểm:", validFoods[0].point);
       })
       .catch((error) => {
         console.error("Lỗi khi lấy danh sách:", error);
@@ -145,7 +155,6 @@ function HomePage() {
   const showRating = () => {
     setIsModalRating(true);
   };
-  console.log(isModalRating);
   const handleDelete = (id) => {
     fetch(`http://localhost:8080/api/geo/${id}`, {
       method: "DELETE",
@@ -168,7 +177,9 @@ function HomePage() {
         message.error("Xóa địa điểm không thành công");
       });
   };
-  console.log(selectedFood);
+  const handleDistanceChange = (distance) => {
+    setRadius(distance * 1000);
+  };
   return (
     <div>
       {error && <p>{error}</p>}
@@ -197,6 +208,13 @@ function HomePage() {
           <Marker position={position}>
             <Popup>Bạn đang ở đây</Popup>
           </Marker>
+          <Circle
+            center={position}
+            radius={radius} // Đơn vị là mét, tạo ra một vòng tròn có bán kính 1000m
+            color="none"
+            fillColor="blue"
+            fillOpacity={0.2}
+          />
           {foods.map((food) => (
             <Marker key={food.id} position={food.point}>
               <Popup>
@@ -271,6 +289,7 @@ function HomePage() {
       <DistanceFilter
         open={isModalDistance}
         onCancel={() => setIsModalDistance(false)}
+        onDistance={handleDistanceChange}
       />
     </div>
   );

@@ -146,7 +146,8 @@ function HeaderComponent() {
       >
         <h1 class="title">
           <span class="title-letter">F</span>
-          ood
+          <img src="public/images/bibimbap.png" style={{ width: "30px" }} />
+          od
           <span class="title-letter">R</span>
           eview
         </h1>

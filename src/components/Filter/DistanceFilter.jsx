@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button, Modal, Input, List, message } from "antd";
 
-const DistanceFilter = ({ open, onCancel }) => {
+const DistanceFilter = ({ open, onCancel, onDistance }) => {
   const [distance, setDistance] = useState(0);
   const [filteredData, setFilteredData] = useState([]);
   const [position, setPosition] = useState(null);
@@ -15,7 +15,7 @@ const DistanceFilter = ({ open, onCancel }) => {
       message.error("Vui lòng nhập khoảng cách.");
       return;
     }
-
+    onDistance(distance);
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
@@ -57,6 +57,7 @@ const DistanceFilter = ({ open, onCancel }) => {
       title="Nhập khoảng cách bạn muốn tìm kiếm (km)"
       open={open}
       onCancel={onCancel}
+      onDistance={() => setDistance(distance)}
       footer={null}
     >
       <Input
@@ -74,18 +75,29 @@ const DistanceFilter = ({ open, onCancel }) => {
       >
         Tìm kiếm
       </Button>
-      <List
-        style={{ marginTop: 16 }}
-        dataSource={filteredData}
-        renderItem={(item) => (
-          <List.Item>
-            <List.Item.Meta
-              title={item.name} // Adjust this based on your data structure
-              description={item.address} // Adjust this based on your data structure
-            />
-          </List.Item>
-        )}
-      />
+      {filteredData.length === 0 ? (
+        <div style={{ textAlign: "center", marginTop: 16 }}>
+          <img
+            src="public/images/not-found.png"
+            alt="No data"
+            style={{ width: "200px" }}
+          />
+          <p>Không có quán gần bạn trong khoảng cách này</p>
+        </div>
+      ) : (
+        <List
+          style={{ marginTop: 16 }}
+          dataSource={filteredData}
+          renderItem={(item) => (
+            <List.Item>
+              <List.Item.Meta
+                title={item.name} // Adjust this based on your data structure
+                description={item.address} // Adjust this based on your data structure
+              />
+            </List.Item>
+          )}
+        />
+      )}
     </Modal>
   );
 };

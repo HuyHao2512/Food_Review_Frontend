@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { Modal, Form, Input, Button, message, Upload } from "antd";
+import { Modal, Form, Input, Button, message, Upload, TimePicker } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import {
   MapContainer,
@@ -9,6 +9,7 @@ import {
   Popup,
   useMapEvents,
 } from "react-leaflet";
+import moment from "moment";
 const LocationMarker = ({ setLat, setLon }) => {
   const [positionAdd, setPositionAdd] = useState(null);
 
@@ -46,20 +47,27 @@ const UpdatePosition = ({
   const [images, setImages] = useState(null);
   const [lat, setLat] = useState(null); // State lưu vĩ độ
   const [lon, setLon] = useState(null); // State lưu kinh độ
+  const [selectedLat, setSelectedLat] = useState(null);
+  const [selectedLon, setSelectedLon] = useState(null);
   const handleImageChange = (info) => {
     setImages(info.file);
   };
 
   useEffect(() => {
     if (selectedFoodUpdate) {
+      setSelectedLat(selectedFoodUpdate.point[0]);
+      setSelectedLon(selectedFoodUpdate.point[1]);
       form.setFieldsValue({
         name: selectedFoodUpdate.name,
         address: selectedFoodUpdate.address,
         phone: selectedFoodUpdate.phone,
-        open: selectedFoodUpdate.open,
-        close: selectedFoodUpdate.close,
+        lon: selectedFoodUpdate.point[0],
+        lat: selectedFoodUpdate.point[1],
+        open: moment(selectedFoodUpdate.open, "HH:mm:ss"),
+        close: moment(selectedFoodUpdate.close, "HH:mm:ss"),
         advantage: selectedFoodUpdate.advantage,
         disadvantage: selectedFoodUpdate.disadvantage,
+        images: selectedFoodUpdate.images,
       });
     }
   }, [selectedFoodUpdate, form]);
@@ -67,12 +75,12 @@ const UpdatePosition = ({
     console.log("Received values of form:", values);
     const formData = new FormData();
     formData.append("name", values.name);
-    formData.append("lon", lon); // Gửi kinh độ từ state
-    formData.append("lat", lat); // Gửi vĩ độ từ state
+    formData.append("lon", lon || values.lon); // Gửi kinh độ từ state
+    formData.append("lat", lat || values.lat); // Gửi vĩ độ từ state
     formData.append("address", values.address);
     formData.append("phone", values.phone);
-    formData.append("open", values.open);
-    formData.append("close", values.close);
+    formData.append("open", moment(values.open).format("HH:mm:ss"));
+    formData.append("close", moment(values.close).format("HH:mm:ss"));
     formData.append("advantage", values.advantage);
     formData.append("disadvantage", values.disadvantage);
     formData.append("files", images);
@@ -104,7 +112,7 @@ const UpdatePosition = ({
         message.error("Cập nhật địa điểm không thành công");
       });
   };
-
+  console.log(selectedLat, selectedLon);
   return (
     <Modal
       title="Chỉnh sửa vị trí"
@@ -117,6 +125,22 @@ const UpdatePosition = ({
           name="name"
           label="Tên địa điểm"
           rules={[{ required: true, message: "Vui lòng nhập tên vị trí!" }]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          name="lon"
+          label="Lon"
+          rules={[{ required: true, message: "Vui lòng nhập số điện thoại!" }]}
+          hidden
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          name="lat"
+          label="Lon"
+          rules={[{ required: true, message: "Vui lòng nhập số điện thoại!" }]}
+          hidden
         >
           <Input />
         </Form.Item>
@@ -143,7 +167,7 @@ const UpdatePosition = ({
             { required: true, message: "Vui lòng nhập thời gian mở cửa!" },
           ]}
         >
-          <Input />
+          <TimePicker format="HH:mm:ss" />
         </Form.Item>
 
         <Form.Item
@@ -153,7 +177,7 @@ const UpdatePosition = ({
             { required: true, message: "Vui lòng nhập thời gian đóng cửa!" },
           ]}
         >
-          <Input />
+          <TimePicker format="HH:mm:ss" />
         </Form.Item>
 
         <Form.Item
@@ -186,7 +210,7 @@ const UpdatePosition = ({
         </Form.Item>
         <div style={{ height: "300px", marginBottom: "16px" }}>
           <MapContainer
-            center={[10.5199938, 105.3233821]}
+            center={[10.03104, 105.76946]}
             zoom={12}
             scrollWheelZoom={false}
             style={{ height: "100%" }}
