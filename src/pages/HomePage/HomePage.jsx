@@ -20,6 +20,7 @@ import DrawerPosition from "../../components/Position/DrawerPosition";
 import ButtonPositon from "../../components/Home/ButtonPositon";
 import ButtonFilter from "../../components/Home/ButtonFilter";
 import DistanceFilter from "../../components/Filter/DistanceFilter";
+import TimeFilter from "../../components/Filter/TimeFilter";
 function RoutingControl({ position, foodPosition }) {
   const map = useMap();
   const routingControlRef = useRef();
@@ -66,6 +67,7 @@ function HomePage() {
   const [isModalVisibleList, setIsModalVisibleList] = useState(false);
   const [isModalVisibleUpdate, setIsModalVisibleUpdate] = useState(false);
   const [isModalVisibleInfo, setIsModalVisibleInfo] = useState(false);
+  const [isModalTime, setIsModalTime] = useState(false);
   const [isModalDistance, setIsModalDistance] = useState(false);
   const [radius, setRadius] = useState(0);
   const showDrawer = (id) => {
@@ -154,10 +156,15 @@ function HomePage() {
     setIsModalVisibleInfo(false);
     setSelectedFood(null); // Đặt lại selectedFood khi đóng modal
     setSelectedFoodInfo(null);
+    setIsModalTime(false);
   };
   const showDistance = () => {
     setIsModalDistance(true);
   };
+  const handleTime = () => {
+    setIsModalTime(true);
+  };
+
   const handleChangeData = (e) => {
     console.log({ e });
     fetch(`http://localhost:8080/api/filter/by-star?star=${e}`, {
@@ -211,6 +218,32 @@ function HomePage() {
         setError("Không thể lấy danh sách.");
       });
   };
+  const handleChangeDataTime = (time) => {
+    console.log("Kết quả lọc theo thời gian:", time);
+    fetch(`http://localhost:8080/api/filter/by-time`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+      body: JSON.stringify({ time }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Mã phản hồi không hợp lệ: " + response.status);
+        }
+        return response.json(); // Chuyển đổi phản hồi thành JSON
+      })
+      .then((data) => {
+        console.log("Danh sách địa điểm validoo", data.data);
+        setFoods(data.data);
+        setIsModalTime(false);
+      })
+      .catch((error) => {
+        console.error("Lỗi khi lấy danh sách:", error);
+        setError("Không thể lấy danh sách.");
+      });
+  };
   const handleDelete = (id) => {
     fetch(`http://localhost:8080/api/geo/${id}`, {
       method: "DELETE",
@@ -245,7 +278,11 @@ function HomePage() {
           />
         )}
         {role === "USER" && (
-          <ButtonFilter onDistance={showDistance} onSubmit={handleChangeData} />
+          <ButtonFilter
+            onDistance={showDistance}
+            onSubmit={handleChangeData}
+            onTime={handleTime}
+          />
         )}
       </div>
       {position ? (
@@ -340,6 +377,11 @@ function HomePage() {
         open={isModalDistance}
         onCancel={() => setIsModalDistance(false)}
         onSubmit={handleChangeDataDistance}
+      />
+      <TimeFilter
+        open={isModalTime}
+        onCancel={handleCloseModal}
+        onSubmit={handleChangeDataTime}
       />
     </div>
   );

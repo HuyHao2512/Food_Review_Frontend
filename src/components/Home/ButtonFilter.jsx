@@ -6,7 +6,7 @@ import {
   FieldTimeOutlined,
 } from "@ant-design/icons";
 
-const ButtonFilter = ({ onSubmit, onDistance }) => {
+const ButtonFilter = ({ onSubmit, onDistance, onTime }) => {
   const handleChangeRate = (e) => {
     onSubmit(e);
   };
@@ -105,7 +105,7 @@ const ButtonFilter = ({ onSubmit, onDistance }) => {
     {
       key: "3",
       label: (
-        <Button type="default" block>
+        <Button type="default" block onClick={onTime}>
           <FieldTimeOutlined /> Tìm kiếm quán còn mở{" "}
         </Button>
       ),
