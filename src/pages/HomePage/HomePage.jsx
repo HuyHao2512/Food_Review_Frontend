@@ -1,12 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-  useMap,
-  Circle,
-} from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import { Button, Space, Rate, message, Spin } from "antd";
 import "./leaflet.css";
 import "leaflet-routing-machine"; // Import thư viện chỉ đường
@@ -19,7 +12,6 @@ import ListPosition from "../../components/Position/ListPosition";
 import DrawerPosition from "../../components/Position/DrawerPosition";
 import ButtonPositon from "../../components/Home/ButtonPositon";
 import ButtonFilter from "../../components/Home/ButtonFilter";
-import RatingFilter from "../../components/Filter/RatingFilter";
 import DistanceFilter from "../../components/Filter/DistanceFilter";
 function RoutingControl({ position, foodPosition }) {
   const map = useMap();
@@ -67,9 +59,7 @@ function HomePage() {
   const [isModalVisibleList, setIsModalVisibleList] = useState(false);
   const [isModalVisibleUpdate, setIsModalVisibleUpdate] = useState(false);
   const [isModalVisibleInfo, setIsModalVisibleInfo] = useState(false);
-  const [isModalRating, setIsModalRating] = useState(false);
   const [isModalDistance, setIsModalDistance] = useState(false);
-  const [radius, setRadius] = useState(0);
   const showDrawer = (id) => {
     setOpenDrawer(true);
   };
@@ -112,19 +102,10 @@ function HomePage() {
         if (!response.ok) {
           throw new Error("Mã phản hồi không hợp lệ: " + response.status);
         }
-        console.log(response);
         return response.json(); // Chuyển đổi phản hồi thành JSON
       })
       .then((data) => {
-        const validFoods = data.data.filter(
-          // Sửa ở đây
-          (food) =>
-            food.point && // Thay đổi từ position thành point
-            Array.isArray(food.point) &&
-            food.point.length === 2
-        );
-        setFoods(validFoods);
-        console.log("Danh sách địa điểm:", validFoods[0].point);
+        setFoods(data.data);
       })
       .catch((error) => {
         console.error("Lỗi khi lấy danh sách:", error);
@@ -139,7 +120,7 @@ function HomePage() {
     setSelectedFoodInfo(item);
     setIsModalVisibleInfo(true);
   };
-  const handleUpdate = (id, lon, lat) => {
+  const handleUpdate = (id) => {
     setIsModalVisibleUpdate(true);
     setSelectedFoodId(id);
     setSelectedFoodUpdate(foods.find((food) => food.id === id));
@@ -152,8 +133,36 @@ function HomePage() {
   const showDistance = () => {
     setIsModalDistance(true);
   };
-  const showRating = () => {
-    setIsModalRating(true);
+  const handleChangeData = (e) => {
+    console.log({ e });
+    fetch(`http://localhost:8080/api/filter/by-star?star=${e}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Mã phản hồi không hợp lệ: " + response.status);
+        }
+        return response.json(); // Chuyển đổi phản hồi thành JSON
+      })
+      .then((data) => {
+        // const validFoods = data.data.filter(
+        //   // Sửa ở đây
+        //   (food) =>
+        //     food.point && // Thay đổi từ position thành point
+        //     Array.isArray(food.point) &&
+        //     food.point.length === 2
+        // );
+        // setFoods(validFoods);
+        setFoods(data.data);
+      })
+      .catch((error) => {
+        console.error("Lỗi khi lấy danh sách:", error);
+        setError("Không thể lấy danh sách.");
+      });
   };
   const handleDelete = (id) => {
     fetch(`http://localhost:8080/api/geo/${id}`, {
@@ -177,9 +186,7 @@ function HomePage() {
         message.error("Xóa địa điểm không thành công");
       });
   };
-  const handleDistanceChange = (distance) => {
-    setRadius(distance * 1000);
-  };
+  console.log(selectedFood);
   return (
     <div>
       {error && <p>{error}</p>}
@@ -191,13 +198,13 @@ function HomePage() {
           />
         )}
         {role === "USER" && (
-          <ButtonFilter onDistance={showDistance} onRating={showRating} />
+          <ButtonFilter onDistance={showDistance} onSubmit={handleChangeData} />
         )}
       </div>
       {position ? (
         <MapContainer
           center={position}
-          zoom={15}
+          zoom={1}
           style={{ height: "93vh" }}
           id="map"
         >
@@ -208,13 +215,6 @@ function HomePage() {
           <Marker position={position}>
             <Popup>Bạn đang ở đây</Popup>
           </Marker>
-          <Circle
-            center={position}
-            radius={radius} // Đơn vị là mét, tạo ra một vòng tròn có bán kính 1000m
-            color="none"
-            fillColor="blue"
-            fillOpacity={0.2}
-          />
           {foods.map((food) => (
             <Marker key={food.id} position={food.point}>
               <Popup>
@@ -282,14 +282,13 @@ function HomePage() {
           food={selectedFoodInfo}
         />
       )}
-      <RatingFilter
+      {/* <RatingFilter
         open={isModalRating}
         onCancel={() => setIsModalRating(false)}
-      />
+      /> */}
       <DistanceFilter
         open={isModalDistance}
         onCancel={() => setIsModalDistance(false)}
-        onDistance={handleDistanceChange}
       />
     </div>
   );

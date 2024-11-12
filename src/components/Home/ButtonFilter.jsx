@@ -1,16 +1,94 @@
-import React from "react";
-import { Button, Dropdown } from "antd";
+import React, { useState } from "react";
+import { Button, Dropdown, Menu, Rate } from "antd";
 import { StarOutlined, DragOutlined, FilterOutlined } from "@ant-design/icons";
 
-const ButtonFilter = ({ onRating, onDistance }) => {
+const ButtonFilter = ({ onSubmit, onDistance }) => {
+  const handleChangeRate = (e) => {
+    onSubmit(e);
+  };
+  const subItems = [
+    {
+      key: "1-1",
+      label: (
+        <Button
+          type="default"
+          block
+          onClick={() => {
+            handleChangeRate(5);
+          }}
+        >
+          <Rate disabled value={5} />
+        </Button>
+      ),
+    },
+    {
+      key: "1-2",
+      label: (
+        <Button
+          type="default"
+          block
+          onClick={() => {
+            handleChangeRate(4);
+          }}
+        >
+          <Rate disabled value={4} />
+        </Button>
+      ),
+    },
+    {
+      key: "1-3",
+      label: (
+        <Button
+          type="default"
+          block
+          onClick={() => {
+            handleChangeRate(3);
+          }}
+        >
+          <Rate disabled value={3} />
+        </Button>
+      ),
+    },
+    {
+      key: "1-4",
+      label: (
+        <Button
+          type="default"
+          block
+          onClick={() => {
+            handleChangeRate(2);
+          }}
+        >
+          <Rate disabled value={2} />
+        </Button>
+      ),
+    },
+    {
+      key: "1-5",
+      label: (
+        <Button
+          type="default"
+          block
+          onClick={() => {
+            handleChangeRate(1);
+          }}
+        >
+          <Rate disabled value={1} />
+        </Button>
+      ),
+    },
+  ];
   const items = [
     {
       key: "1",
       label: (
-        <Button type="default" onClick={onRating} block>
+        <Button type="default" block>
           <StarOutlined /> Tìm kiếm theo đánh giá{" "}
         </Button>
       ),
+      children: subItems.map((item) => (
+        <Menu.Item key={item.key}>{item.label}</Menu.Item>
+      )),
     },
     {
       key: "2",
@@ -22,22 +100,6 @@ const ButtonFilter = ({ onRating, onDistance }) => {
     },
   ];
   return (
-    // <div
-    //   style={{
-    //     position: "absolute",
-    //     top: "70px", // Adjust this to place it below your header
-    //     right: "15px",
-    //     zIndex: 1000, // Higher z-index to stay above the map
-    //   }}
-    // >
-    //   <Button type="default" onClick={onRating}>
-    //     <StarOutlined /> Tìm kiếm theo đánh giá
-    //   </Button>
-    //   &nbsp;&nbsp;&nbsp;
-    //   <Button type="default" onClick={onDistance}>
-    //     <DragOutlined /> Tìm kiếm theo khoảng cách
-    //   </Button>
-    // </div>
     <div
       style={{
         position: "absolute",
@@ -49,14 +111,28 @@ const ButtonFilter = ({ onRating, onDistance }) => {
       }}
     >
       <Dropdown
-        menu={{
-          items,
-        }}
+        overlay={
+          <Menu>
+            {items.map((item) =>
+              item.children ? (
+                <Menu.SubMenu key={item.key} title={item.label}>
+                  {item.children}
+                </Menu.SubMenu>
+              ) : (
+                <Menu.Item key={item.key}>{item.label}</Menu.Item>
+              )
+            )}
+          </Menu>
+        }
         placement="topRight"
       >
         <Button style={{ border: "1px solid gray" }}>
           Lọc
-          <img src="./images/filter.gif" style={{ height: "30px" }} />
+          <img
+            src="./images/filter.gif"
+            style={{ height: "30px" }}
+            alt="Filter icon"
+          />
         </Button>
       </Dropdown>
     </div>
