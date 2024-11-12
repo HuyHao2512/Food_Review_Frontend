@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button, Modal, Input, List, message } from "antd";
 
-const DistanceFilter = ({ open, onCancel, onDistance }) => {
+const DistanceFilter = ({ open, onCancel, onSubmit }) => {
   const [distance, setDistance] = useState(0);
   const [filteredData, setFilteredData] = useState([]);
   const [position, setPosition] = useState(null);
@@ -15,32 +15,34 @@ const DistanceFilter = ({ open, onCancel, onDistance }) => {
       message.error("Vui lòng nhập khoảng cách.");
       return;
     }
-    onDistance(distance);
+    // onDistance(distance);
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const { latitude, longitude } = pos.coords;
           setPosition({ latitude, longitude });
-
-          // Construct the query parameter URL with latitude, longitude, and distance
-          fetch(
-            `http://localhost:8080/api/filter/by-distance?lat=${latitude}&lon=${longitude}&distance=${distance}`,
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-              },
-            }
-          )
-            .then((response) => response.json())
-            .then((data) => {
-              console.log("Kết quả lọc theo khoảng cách:", data);
-              setFilteredData(data.data); // Assuming data.data contains the array of filtered data
-            })
-            .catch((error) => {
-              console.error("Lỗi:", error);
-            });
+          onSubmit({ latitude, longitude, distance });
+          // // Construct the query parameter URL with latitude, longitude, and distance
+          // fetch(
+          //   `http://localhost:8080/api/filter/by-distance?lat=${latitude}&lon=${longitude}&distance=${distance}`,
+          //   {
+          //     method: "GET",
+          //     headers: {
+          //       "Content-Type": "application/json",
+          //       Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          //     },
+          //   }
+          // )
+          //   .then((response) => response.json())
+          //   .then((data) => {
+          //     console.log("Kết quả lọc theo khoảng cách:", data);
+          //     setFilteredData(data.data); // Assuming data.data contains the array of filtered data
+          //     onSubmit(data);
+          //   })
+          //   .catch((error) => {
+          //     console.error("Lỗi:", error);
+          //   });
         },
         (err) => {
           console.error(err);
@@ -75,7 +77,7 @@ const DistanceFilter = ({ open, onCancel, onDistance }) => {
       >
         Tìm kiếm
       </Button>
-      {filteredData.length === 0 ? (
+      {/* {filteredData.length === 0 ? (
         <div style={{ textAlign: "center", marginTop: 16 }}>
           <img
             src="public/images/not-found.png"
@@ -97,7 +99,7 @@ const DistanceFilter = ({ open, onCancel, onDistance }) => {
             </List.Item>
           )}
         />
-      )}
+      )} */}
     </Modal>
   );
 };

@@ -19,7 +19,6 @@ import ListPosition from "../../components/Position/ListPosition";
 import DrawerPosition from "../../components/Position/DrawerPosition";
 import ButtonPositon from "../../components/Home/ButtonPositon";
 import ButtonFilter from "../../components/Home/ButtonFilter";
-import RatingFilter from "../../components/Filter/RatingFilter";
 import DistanceFilter from "../../components/Filter/DistanceFilter";
 function RoutingControl({ position, foodPosition }) {
   const map = useMap();
@@ -67,7 +66,6 @@ function HomePage() {
   const [isModalVisibleList, setIsModalVisibleList] = useState(false);
   const [isModalVisibleUpdate, setIsModalVisibleUpdate] = useState(false);
   const [isModalVisibleInfo, setIsModalVisibleInfo] = useState(false);
-  const [isModalRating, setIsModalRating] = useState(false);
   const [isModalDistance, setIsModalDistance] = useState(false);
   const [radius, setRadius] = useState(0);
   const showDrawer = (id) => {
@@ -86,6 +84,11 @@ function HomePage() {
   const showAddPositionModal = () => {
     setIsModalVisiblePosition(true);
   };
+  // const handleChangeDistance = (distance) => {
+  //   setRadius(distance * 1000);
+  //   setIsModalDistance(false);
+  //   setFoods();
+  // };
   useEffect(() => {
     // Lấy vị trí hiện tại của người dùng
     if (navigator.geolocation) {
@@ -112,19 +115,22 @@ function HomePage() {
         if (!response.ok) {
           throw new Error("Mã phản hồi không hợp lệ: " + response.status);
         }
-        console.log(response);
         return response.json(); // Chuyển đổi phản hồi thành JSON
       })
       .then((data) => {
-        const validFoods = data.data.filter(
-          // Sửa ở đây
-          (food) =>
-            food.point && // Thay đổi từ position thành point
-            Array.isArray(food.point) &&
-            food.point.length === 2
-        );
-        setFoods(validFoods);
-        console.log("Danh sách địa điểm validoo", validFoods);
+        // <<<<<<< HEAD
+        //         const validFoods = data.data.filter(
+        //           // Sửa ở đây
+        //           (food) =>
+        //             food.point && // Thay đổi từ position thành point
+        //             Array.isArray(food.point) &&
+        //             food.point.length === 2
+        //         );
+        //         setFoods(validFoods);
+        //         console.log("Danh sách địa điểm validoo", validFoods);
+        // =======
+        setFoods(data.data);
+        // >>>>>>> c3f893f3bad4c0d371024ec60a573de9e44b202b
       })
       .catch((error) => {
         console.error("Lỗi khi lấy danh sách:", error);
@@ -139,7 +145,7 @@ function HomePage() {
     setSelectedFoodInfo(item);
     setIsModalVisibleInfo(true);
   };
-  const handleUpdate = (id, lon, lat) => {
+  const handleUpdate = (id) => {
     setIsModalVisibleUpdate(true);
     setSelectedFoodId(id);
     setSelectedFoodUpdate(foods.find((food) => food.id === id));
@@ -152,8 +158,58 @@ function HomePage() {
   const showDistance = () => {
     setIsModalDistance(true);
   };
-  const showRating = () => {
-    setIsModalRating(true);
+  const handleChangeData = (e) => {
+    console.log({ e });
+    fetch(`http://localhost:8080/api/filter/by-star?star=${e}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Mã phản hồi không hợp lệ: " + response.status);
+        }
+        return response.json(); // Chuyển đổi phản hồi thành JSON
+      })
+      .then((data) => {
+        console.log("Danh sách địa điểm validoo", data.data);
+        setFoods(data.data);
+      })
+      .catch((error) => {
+        console.error("Lỗi khi lấy danh sách:", error);
+        setError("Không thể lấy danh sách.");
+      });
+  };
+  const handleChangeDataDistance = (e) => {
+    console.log("Kết quả lọc theo khoảng cách:", e);
+    fetch(
+      `http://localhost:8080/api/filter/by-distance?lat=${e.latitude}&lon=${e.longitude}&distance=${e.distance}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      }
+    )
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Mã phản hồi không hợp lệ: " + response.status);
+        }
+        return response.json(); // Chuyển đổi phản hồi thành JSON
+      })
+      .then((data) => {
+        console.log("Danh sách địa điểm validoo", data.data);
+        setRadius(e.distance * 1000);
+        setIsModalDistance(false);
+        setFoods(data.data);
+      })
+      .catch((error) => {
+        console.error("Lỗi khi lấy danh sách:", error);
+        setError("Không thể lấy danh sách.");
+      });
   };
   const handleDelete = (id) => {
     fetch(`http://localhost:8080/api/geo/${id}`, {
@@ -177,9 +233,7 @@ function HomePage() {
         message.error("Xóa địa điểm không thành công");
       });
   };
-  const handleDistanceChange = (distance) => {
-    setRadius(distance * 1000);
-  };
+  console.log(selectedFood);
   return (
     <div>
       {error && <p>{error}</p>}
@@ -191,13 +245,13 @@ function HomePage() {
           />
         )}
         {role === "USER" && (
-          <ButtonFilter onDistance={showDistance} onRating={showRating} />
+          <ButtonFilter onDistance={showDistance} onSubmit={handleChangeData} />
         )}
       </div>
       {position ? (
         <MapContainer
           center={position}
-          zoom={15}
+          zoom={13}
           style={{ height: "93vh" }}
           id="map"
         >
@@ -282,14 +336,10 @@ function HomePage() {
           food={selectedFoodInfo}
         />
       )}
-      <RatingFilter
-        open={isModalRating}
-        onCancel={() => setIsModalRating(false)}
-      />
       <DistanceFilter
         open={isModalDistance}
         onCancel={() => setIsModalDistance(false)}
-        onDistance={handleDistanceChange}
+        onSubmit={handleChangeDataDistance}
       />
     </div>
   );
