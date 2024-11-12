@@ -9,11 +9,10 @@ import {
   useMapEvents,
   useMap,
 } from "react-leaflet";
-import moment from "moment";
 
+import moment from "moment";
 const LocationMarker = ({ setLat, setLon }) => {
   const [positionAdd, setPositionAdd] = useState(null);
-  const map = useMap(); // Lấy bản đồ hiện tại
 
   useMapEvents({
     click(e) {
@@ -23,7 +22,6 @@ const LocationMarker = ({ setLat, setLon }) => {
       setPositionAdd(e.latlng);
       setLat(roundedLat);
       setLon(roundedLng);
-      map.flyTo([roundedLat, roundedLng], map.getZoom()); // Zoom vào vị trí đã chọn
     },
   });
 
@@ -54,11 +52,9 @@ const CreatePosition = ({ open, onCancel }) => {
     formData.append("lat", lat);
     formData.append("address", values.address);
     formData.append("phone", values.phone);
-
     // Định dạng thời gian mở và đóng cửa
     formData.append("open", moment(values.open).format("HH:mm"));
     formData.append("close", moment(values.close).format("HH:mm"));
-
     formData.append("advantage", values.advantage);
     formData.append("disadvantage", values.disadvantage);
     formData.append("file", images);
@@ -171,13 +167,12 @@ const CreatePosition = ({ open, onCancel }) => {
         <div style={{ height: "300px", marginBottom: "16px" }}>
           <MapContainer
             center={[10.03104, 105.76946]}
-            zoom={15}
-            scrollWheelZoom={false}
+            zoom={13}
             style={{ height: "100%" }}
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a>'
+              attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
             />
             <LocationMarker setLat={setLat} setLon={setLon} />
           </MapContainer>

@@ -124,7 +124,7 @@ function HomePage() {
             food.point.length === 2
         );
         setFoods(validFoods);
-        console.log("Danh sách địa điểm:", validFoods[0].point);
+        console.log("Danh sách địa điểm validoo", validFoods);
       })
       .catch((error) => {
         console.error("Lỗi khi lấy danh sách:", error);

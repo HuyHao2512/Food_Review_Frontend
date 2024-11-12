@@ -1,6 +1,10 @@
 import React from "react";
 import { Button, Dropdown } from "antd";
-import { StarOutlined, DragOutlined, FilterOutlined } from "@ant-design/icons";
+import {
+  StarOutlined,
+  DragOutlined,
+  FieldTimeOutlined,
+} from "@ant-design/icons";
 
 const ButtonFilter = ({ onRating, onDistance }) => {
   const items = [
@@ -17,6 +21,14 @@ const ButtonFilter = ({ onRating, onDistance }) => {
       label: (
         <Button type="default" onClick={onDistance} block>
           <DragOutlined /> Tìm kiếm theo khoảng cách{" "}
+        </Button>
+      ),
+    },
+    {
+      key: "3",
+      label: (
+        <Button type="default" block>
+          <FieldTimeOutlined /> Tìm kiếm quán còn mở{" "}
         </Button>
       ),
     },

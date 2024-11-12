@@ -144,11 +144,11 @@ function HeaderComponent() {
           backgroundColor: "#96d6ff",
         }}
       >
-        <h1 class="title">
-          <span class="title-letter">F</span>
+        <h1 className="title">
+          <span className="title-letter">F</span>
           <img src="public/images/bibimbap.png" style={{ width: "30px" }} />
           od
-          <span class="title-letter">R</span>
+          <span className="title-letter">R</span>
           eview
         </h1>
 
