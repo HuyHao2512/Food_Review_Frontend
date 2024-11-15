@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { List, Card, Rate, Row, Col, Pagination } from "antd";
-
+import { List, Card, Rate, Row, Col, Button } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
 const CommentList = ({ positionId }) => {
   const [comments, setComments] = useState([]);
   useEffect(() => {
@@ -47,13 +47,27 @@ const CommentList = ({ positionId }) => {
             >
               <Row gutter={16}>
                 <Col span={24}>
-                  <p>
-                    <strong>{comment.user.email}</strong>
-                  </p>
-                  <p>
-                    <Rate disabled value={comment.rating} />
-                  </p>
-                  <p> {comment.comment}</p>
+                  <div
+                    style={{
+                      width: "250px",
+                      maxHeight: "200px", // Giới hạn chiều cao
+                      overflowY: "auto", // Thêm thanh cuộn dọc
+                      wordWrap: "break-word", // Tự xuống dòng
+                    }}
+                  >
+                    <p>
+                      <strong>{comment.user.name}</strong>
+                    </p>
+                    <p>
+                      <Rate disabled value={comment.rating} />
+                    </p>
+                    <p> {comment.comment}</p>
+                    {comment.user.email === localStorage.getItem("email") && (
+                      <Button type="primary" danger>
+                        <DeleteOutlined />
+                      </Button>
+                    )}
+                  </div>
                 </Col>
               </Row>
             </Card>

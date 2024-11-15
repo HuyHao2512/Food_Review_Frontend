@@ -35,6 +35,7 @@ function HeaderComponent() {
         localStorage.setItem("refreshToken", data.data.token.refresh_token);
         localStorage.setItem("isLoggedIn", true);
         localStorage.setItem("role", JSON.stringify(data.data.role));
+        localStorage.setItem("email", data.data.email);
         setIsLoggedIn(true);
         setIsModalVisible(false);
         message.success("Đăng nhập thành công!");
@@ -120,6 +121,7 @@ function HeaderComponent() {
         // Xóa token khỏi localStorage
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
+        localStorage.removeItem("email");
         localStorage.removeItem("isLoggedIn");
         localStorage.removeItem("role");
         // Cập nhật trạng thái không đăng nhập

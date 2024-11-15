@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, Form, Input, Button, message, Upload, TimePicker } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import {
@@ -11,17 +11,28 @@ import {
 } from "react-leaflet";
 
 import moment from "moment";
-const LocationMarker = ({ setLat, setLon }) => {
+const fetchAddress = async (lat, lon) => {
+  const response = await fetch(
+    `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`
+  );
+  const data = await response.json();
+  return data.display_name || "Unknown location";
+};
+
+const LocationMarker = ({ setLat, setLon, setAddress }) => {
   const [positionAdd, setPositionAdd] = useState(null);
 
   useMapEvents({
-    click(e) {
+    click: async (e) => {
       const { lat, lng } = e.latlng;
       const roundedLat = parseFloat(lat.toFixed(6));
       const roundedLng = parseFloat(lng.toFixed(6));
       setPositionAdd(e.latlng);
       setLat(roundedLat);
       setLon(roundedLng);
+
+      const address = await fetchAddress(roundedLat, roundedLng);
+      setAddress(address);
     },
   });
 
@@ -40,11 +51,13 @@ const CreatePosition = ({ open, onCancel }) => {
   const [images, setImages] = useState(null);
   const [lat, setLat] = useState(null);
   const [lon, setLon] = useState(null);
-
+  const [address, setAddress] = useState("...");
   const handleImageChange = (info) => {
     setImages(info.file);
   };
-
+  useEffect(() => {
+    form.setFieldsValue({ address });
+  }, [address, form]);
   const onFinishCreate = (values) => {
     const formData = new FormData();
     formData.append("name", values.name);
@@ -77,9 +90,11 @@ const CreatePosition = ({ open, onCancel }) => {
       .then(() => {
         loadingMessage();
         message.success("Thêm địa điểm thành công");
-        window.location.reload(); // Load lại trang để hiển thị địa điểm mới
         form.resetFields(); // Reset lại form
         onCancel(); // Đóng modal
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500); // Trì hoãn 1.5 giây (tuỳ chỉnh thời gian nếu cần)
       })
       .catch(() => {
         loadingMessage();
@@ -174,7 +189,11 @@ const CreatePosition = ({ open, onCancel }) => {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
             />
-            <LocationMarker setLat={setLat} setLon={setLon} />
+            <LocationMarker
+              setLat={setLat}
+              setLon={setLon}
+              setAddress={setAddress}
+            />
           </MapContainer>
         </div>
 
