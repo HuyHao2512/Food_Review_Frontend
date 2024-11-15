@@ -4,9 +4,9 @@ import {
   StarOutlined,
   DragOutlined,
   FieldTimeOutlined,
+  FullscreenOutlined,
 } from "@ant-design/icons";
-
-const ButtonFilter = ({ onSubmit, onDistance, onTime }) => {
+const ButtonFilter = ({ onSubmit, onDistance, onTime, onAll }) => {
   const handleChangeRate = (e) => {
     onSubmit(e);
   };
@@ -107,6 +107,15 @@ const ButtonFilter = ({ onSubmit, onDistance, onTime }) => {
       label: (
         <Button type="default" block onClick={onTime}>
           <FieldTimeOutlined /> Tìm kiếm quán còn mở{" "}
+        </Button>
+      ),
+    },
+    {
+      key: "4",
+      label: (
+        <Button type="default" block onClick={onAll}>
+          <FullscreenOutlined />
+          Xem tất cả các quán
         </Button>
       ),
     },

@@ -1,0 +1,27 @@
+.address-container {
+  position: fixed; /* Giữ cố định trên màn hình */
+  top: 16px; /* Ở dưới cùng */
+  left: 19%;
+  width: 68%; /* Chiếm toàn bộ chiều ngang */
+  overflow: hidden; /* Ẩn phần nội dung thừa */
+  background-color: rgba(0, 0, 0, 0); /* Nền mờ tối */
+  z-index: 1000; /* Đảm bảo nằm trên các phần tử khác */
+}
+
+.address-text {
+  display: inline-block; /* Hiển thị nội dung theo dòng */
+  color: white; /* Màu chữ */
+  font-size: 18px; /* Cỡ chữ */
+  white-space: nowrap; /* Không cho phép xuống dòng */
+  animation: scrollText 15s linear infinite; /* Hiệu ứng chuyển động */
+}
+
+/* Định nghĩa hiệu ứng */
+@keyframes scrollText {
+  0% {
+    transform: translateX(100%); /* Bắt đầu từ ngoài màn hình bên phải */
+  }
+  100% {
+    transform: translateX(-100%); /* Kết thúc ngoài màn hình bên trái */
+  }
+}

@@ -7,7 +7,7 @@ import {
   useMap,
   Circle,
 } from "react-leaflet";
-import { Button, Space, Rate, message, Spin } from "antd";
+import { Button, Space, message, Spin, Skeleton } from "antd";
 import "./leaflet.css";
 import "leaflet-routing-machine"; // Import thư viện chỉ đường
 import L from "leaflet";
@@ -21,6 +21,7 @@ import ButtonPositon from "../../components/Home/ButtonPositon";
 import ButtonFilter from "../../components/Home/ButtonFilter";
 import DistanceFilter from "../../components/Filter/DistanceFilter";
 import TimeFilter from "../../components/Filter/TimeFilter";
+import Address from "../../components/Home/Address";
 function RoutingControl({ position, foodPosition }) {
   const map = useMap();
   const routingControlRef = useRef();
@@ -55,6 +56,7 @@ function RoutingControl({ position, foodPosition }) {
 }
 function HomePage() {
   const [position, setPosition] = useState(null);
+  const [address, setAddress] = useState("");
   const [foods, setFoods] = useState([]);
   const [selectedFood, setSelectedFood] = useState(null);
   const [selectedFoodInfo, setSelectedFoodInfo] = useState(null);
@@ -86,17 +88,15 @@ function HomePage() {
   const showAddPositionModal = () => {
     setIsModalVisiblePosition(true);
   };
-  // const handleChangeDistance = (distance) => {
-  //   setRadius(distance * 1000);
-  //   setIsModalDistance(false);
-  //   setFoods();
-  // };
+
   useEffect(() => {
-    // Lấy vị trí hiện tại của người dùng
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
+          const latitude = pos.coords.latitude;
+          const longitude = pos.coords.longitude;
           setPosition([pos.coords.latitude, pos.coords.longitude]);
+          fetchAddress(latitude, longitude);
         },
         (err) => {
           console.error(err);
@@ -106,7 +106,6 @@ function HomePage() {
     } else {
       setError("Geolocation không được hỗ trợ trên trình duyệt của bạn.");
     }
-    // Lấy danh sách
     fetch("http://localhost:8080/api/geo", {
       method: "GET",
       headers: {
@@ -120,25 +119,29 @@ function HomePage() {
         return response.json(); // Chuyển đổi phản hồi thành JSON
       })
       .then((data) => {
-        // <<<<<<< HEAD
-        //         const validFoods = data.data.filter(
-        //           // Sửa ở đây
-        //           (food) =>
-        //             food.point && // Thay đổi từ position thành point
-        //             Array.isArray(food.point) &&
-        //             food.point.length === 2
-        //         );
-        //         setFoods(validFoods);
-        //         console.log("Danh sách địa điểm validoo", validFoods);
-        // =======
         setFoods(data.data);
-        // >>>>>>> c3f893f3bad4c0d371024ec60a573de9e44b202b
       })
       .catch((error) => {
         console.error("Lỗi khi lấy danh sách:", error);
         setError("Không thể lấy danh sách.");
       });
   }, []);
+  const fetchAddress = (latitude, longitude) => {
+    // Gọi API để chuyển đổi tọa độ thành địa chỉ
+    fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        if (data && data.display_name) {
+          setAddress(data.display_name); // Lưu địa chỉ vào state
+        }
+      })
+      .catch((error) => {
+        console.error("Lỗi khi lấy địa chỉ:", error);
+        setError("Không thể lấy địa chỉ.");
+      });
+  };
   const role = JSON.parse(localStorage.getItem("role"));
   const showVisible = () => {
     setIsModalVisibleList(true);
@@ -164,9 +167,30 @@ function HomePage() {
   const handleTime = () => {
     setIsModalTime(true);
   };
-
+  const handleAll = () => {
+    fetch("http://localhost:8080/api/geo", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Mã phản hồi không hợp lệ: " + response.status);
+        }
+        return response.json(); // Chuyển đổi phản hồi thành JSON
+      })
+      .then((data) => {
+        setFoods(data.data);
+        setRadius(0);
+        message.success("Dưới đây là tất cả các địa điểm");
+      })
+      .catch((error) => {
+        console.error("Lỗi khi lấy danh sách:", error);
+        setError("Không thể lấy danh sách.");
+      });
+  };
   const handleChangeData = (e) => {
-    console.log({ e });
     fetch(`http://localhost:8080/api/filter/by-star?star=${e}`, {
       method: "GET",
       headers: {
@@ -181,8 +205,13 @@ function HomePage() {
         return response.json(); // Chuyển đổi phản hồi thành JSON
       })
       .then((data) => {
-        console.log("Danh sách địa điểm validoo", data.data);
         setFoods(data.data);
+        setRadius(0);
+        if (data.data.length === 0) {
+          message.info(`Không có địa điểm ${e} nào`);
+        } else {
+          message.success(`Dưới đây là các địa điểm ${e} sao `);
+        }
       })
       .catch((error) => {
         console.error("Lỗi khi lấy danh sách:", error);
@@ -190,13 +219,11 @@ function HomePage() {
       });
   };
   const handleChangeDataDistance = (e) => {
-    console.log("Kết quả lọc theo khoảng cách:", e);
     fetch(
       `http://localhost:8080/api/filter/by-distance?lat=${e.latitude}&lon=${e.longitude}&distance=${e.distance}`,
       {
         method: "GET",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
       }
@@ -208,18 +235,24 @@ function HomePage() {
         return response.json(); // Chuyển đổi phản hồi thành JSON
       })
       .then((data) => {
-        console.log("Danh sách địa điểm validoo", data.data);
         setRadius(e.distance * 1000);
         setIsModalDistance(false);
         setFoods(data.data);
+        if (data.data.length === 0) {
+          message.info(`Không có địa điểm nào trong bán kính ${e.distance} km`);
+        } else {
+          message.success(
+            `Dưới đây là các địa điểm trong bán kính ${e.distance} km`
+          );
+        }
       })
       .catch((error) => {
+        message.error("Không thể lấy danh sách.");
         console.error("Lỗi khi lấy danh sách:", error);
         setError("Không thể lấy danh sách.");
       });
   };
   const handleChangeDataTime = (time) => {
-    console.log("Kết quả lọc theo thời gian:", time);
     fetch(`http://localhost:8080/api/filter/by-time`, {
       method: "POST",
       headers: {
@@ -235,9 +268,14 @@ function HomePage() {
         return response.json(); // Chuyển đổi phản hồi thành JSON
       })
       .then((data) => {
-        console.log("Danh sách địa điểm validoo", data.data);
         setFoods(data.data);
+        setRadius(0);
         setIsModalTime(false);
+        if (data.data.length === 0) {
+          message.info("Không có địa điểm nào còn mở cửa");
+        } else {
+          message.success("Dưới đây là các địa điểm còn mở cửa");
+        }
       })
       .catch((error) => {
         console.error("Lỗi khi lấy danh sách:", error);
@@ -258,7 +296,6 @@ function HomePage() {
         return response.text();
       })
       .then((data) => {
-        console.log("Success:", data);
         message.success("Xóa địa điểm thành công");
       })
       .catch((error) => {
@@ -266,10 +303,17 @@ function HomePage() {
         message.error("Xóa địa điểm không thành công");
       });
   };
-  console.log(selectedFood);
+  const redMarkerIcon = new L.Icon({
+    iconUrl: "public/images/pin-map.png", // Path to your red marker image
+    iconSize: [25, 41], // Size of the marker
+    iconAnchor: [12, 41], // Anchor point of the marker
+    popupAnchor: [1, -34], // Popup position relative to the marker
+    shadowUrl: "public/images/marker-shadow.png", // Path to the shadow image
+    shadowSize: [41, 41], // Size of the shadow
+    shadowAnchor: [12, 41], // Anchor point of the shadow
+  });
   return (
     <div>
-      {error && <p>{error}</p>}
       <div>
         {role === "ADMIN" && (
           <ButtonPositon
@@ -282,9 +326,11 @@ function HomePage() {
             onDistance={showDistance}
             onSubmit={handleChangeData}
             onTime={handleTime}
+            onAll={handleAll}
           />
         )}
       </div>
+      <Address address={address} />
       {position ? (
         <MapContainer
           center={position}
@@ -296,12 +342,12 @@ function HomePage() {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
           />
-          <Marker position={position}>
-            <Popup>Bạn đang ở đây</Popup>
+          <Marker position={position} icon={redMarkerIcon}>
+            <Popup>Bạn đang ở đây </Popup>
           </Marker>
           <Circle
             center={position}
-            radius={radius} // Đơn vị là mét, tạo ra một vòng tròn có bán kính 1000m
+            radius={radius}
             color="none"
             fillColor="blue"
             fillOpacity={0.2}
@@ -339,10 +385,7 @@ function HomePage() {
           )}
         </MapContainer>
       ) : (
-        <p>
-          <Spin />
-          Đang lấy vị trí của bạn...
-        </p>
+        <Skeleton active />
       )}
       <CreatePosition
         open={isModalVisiblePosition}

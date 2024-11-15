@@ -5,7 +5,6 @@ const CommentList = ({ positionId }) => {
   const [comments, setComments] = useState([]);
   useEffect(() => {
     if (positionId) {
-      // Fetch comments for this position
       fetch(`http://localhost:8080/api/comment/${positionId}`, {
         method: "GET",
         headers: {
@@ -49,13 +48,12 @@ const CommentList = ({ positionId }) => {
               <Row gutter={16}>
                 <Col span={24}>
                   <p>
-                    <strong>Bình luận: </strong>
-                    {comment.comment}
+                    <strong>{comment.user.email}</strong>
                   </p>
                   <p>
-                    <strong>Đánh giá: </strong>
                     <Rate disabled value={comment.rating} />
                   </p>
+                  <p> {comment.comment}</p>
                 </Col>
               </Row>
             </Card>

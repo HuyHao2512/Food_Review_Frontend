@@ -10,6 +10,7 @@ import {
   useMapEvents,
 } from "react-leaflet";
 import moment from "moment";
+
 const LocationMarker = ({ setLat, setLon }) => {
   const [positionAdd, setPositionAdd] = useState(null);
 
@@ -71,7 +72,8 @@ const UpdatePosition = ({
       });
     }
   }, [selectedFoodUpdate, form]);
-  const onFinishUpdate = (values) => {
+
+  const onFinishUpdate = async (values) => {
     console.log("Received values of form:", values);
     const formData = new FormData();
     formData.append("name", values.name);
@@ -83,8 +85,8 @@ const UpdatePosition = ({
     formData.append("close", moment(values.close).format("HH:mm:ss"));
     formData.append("advantage", values.advantage);
     formData.append("disadvantage", values.disadvantage);
-    formData.append("files", images);
-    console.log(selectedFoodId);
+    formData.append("files", images); // Gửi file khi có hình ảnh mới
+
     const id = selectedFoodId;
     const loadingMessage = message.loading("Đang cập nhật địa điểm...", 0);
     fetch(`http://localhost:8080/api/geo/${id}`, {
@@ -112,7 +114,7 @@ const UpdatePosition = ({
         message.error("Cập nhật địa điểm không thành công");
       });
   };
-  console.log(selectedLat, selectedLon);
+
   return (
     <Modal
       title="Chỉnh sửa vị trí"
