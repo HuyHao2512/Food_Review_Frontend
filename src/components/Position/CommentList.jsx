@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { List, Card, Rate, Row, Col, Button, message } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
-const CommentList = ({ positionId }) => {
+const CommentList = ({ positionId, setFetchComments }) => {
   const [comments, setComments] = useState([]);
   useEffect(() => {
+    fetchComments();
+    setFetchComments(() => fetchComments); // Truyền hàm lên component cha
+  }, [positionId]);
+
+  const fetchComments = () => {
     if (positionId) {
       fetch(`http://localhost:8080/api/comment/${positionId}`, {
         method: "GET",
@@ -19,13 +24,45 @@ const CommentList = ({ positionId }) => {
           } else {
             console.error("Failed to fetch comments:", data.message);
           }
-          message.success("Xóa bình luận thành công");
         })
         .catch((error) => {
           console.error("Error fetching comments:", error);
         });
     }
-  }, [positionId]);
+  };
+
+  const handleDelete = (id) => {
+    console.log({ id });
+    if (id) {
+      fetch(`http://localhost:8080/api/comment/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      })
+        .then((response) => {
+          console.log({ response });
+          if (!response.ok) {
+            // Kiểm tra nếu phản hồi không thành công và ném lỗi để `catch` bắt được
+            throw new Error("Bạn không thể xóa bình luận");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          console.log({ data });
+          message.success(data.message);
+          setComments((prevComments) =>
+            prevComments.filter((comment) => comment.id !== id)
+          );
+        })
+        .catch((error) => {
+          // In ra chi tiết lỗi để debug dễ dàng hơn
+          console.error("Error during deletion:", error);
+          message.error(`Lỗi: ${error.message || "Xóa bình luận thất bại"}`);
+        });
+    }
+  };
+
   return (
     <div>
       <h3>Bình luận:</h3>
@@ -56,15 +93,20 @@ const CommentList = ({ positionId }) => {
                       wordWrap: "break-word", // Tự xuống dòng
                     }}
                   >
-                    <p>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
                       <strong>{comment.user.name}</strong>
-                    </p>
+                      <p>{new Date(comment.createdAt).toLocaleString()}</p>
+                    </div>
                     <p>
                       <Rate disabled value={comment.rating} />
                     </p>
                     <p> {comment.comment}</p>
                     {comment.user.email === localStorage.getItem("email") && (
-                      <Button type="primary" danger>
+                      <Button
+                        type="primary"
+                        danger
+                        onClick={() => handleDelete(comment.id)}
+                      >
                         <DeleteOutlined />
                       </Button>
                     )}

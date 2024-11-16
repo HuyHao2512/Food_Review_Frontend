@@ -1,21 +1,46 @@
 import React, { useState } from "react";
 import { Button, AutoComplete, Rate, Popover } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
+import DrawerPosition from "../Position/DrawerPosition";
 
 const SearchComponent = () => {
   const [showInput, setShowInput] = useState(false);
   const [searchValue, setSearchValue] = useState(""); // Đây là giá trị hiển thị trong ô input
   const [selectedId, setSelectedId] = useState(null); // Lưu id của mục đã chọn
   const [options, setOptions] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [food, setFood] = useState(null);
 
   const handleIconClick = () => {
     setShowInput(true);
   };
+  const onCloseDrawer = () => {
+    setOpen(false);
+  };
 
   const onSelectGeo = (value, option) => {
-    console.log("Selected ID:", value);
     setSelectedId(value); // Lưu id khi chọn mục
     setSearchValue(option.name); // Cập nhật searchValue với name
+    handleGetFood(option.value);
+    setOpen(true);
+  };
+
+  const handleGetFood = (id) => {
+    if (id) {
+      fetch(`http://localhost:8080/api/geo/${id}`, {
+        method: "GET",
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .then((data) => {          
+          setFood(data.data);
+        })
+        .catch((error) => console.error("Fetch error:", error));
+    }
   };
 
   const handleSearch = (value) => {
@@ -81,6 +106,13 @@ const SearchComponent = () => {
           notFoundContent="Không tìm thấy địa điểm"
         />
       )}
+      <DrawerPosition
+        food={food || {}}
+        open={open}
+        placement="left"
+        onClose={onCloseDrawer}
+        // onDirectionClick={() => handleDirectionClick(food)}
+      />
     </div>
   );
 };

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button, Rate, Input, message } from "antd";
 const { TextArea } = Input;
 
-const Comment = ({ idComment }) => {
+const Comment = ({ idComment, onCommentAdded }) => {
   const [comment, setComment] = useState("");
   const [rating, setRating] = useState(0);
 
@@ -26,6 +26,7 @@ const Comment = ({ idComment }) => {
           console.log("Thêm bình luận thành công:", data);
           closeLoading();
           message.success("Thêm bình luận thành công");
+          onCommentAdded();
         } else {
           throw new Error(data.message || "Không thể thêm bình luận");
         }
