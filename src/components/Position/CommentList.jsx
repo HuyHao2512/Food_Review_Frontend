@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { List, Card, Rate, Row, Col, Button } from "antd";
+import { List, Card, Rate, Row, Col, Button, message } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 const CommentList = ({ positionId }) => {
   const [comments, setComments] = useState([]);
@@ -19,6 +19,7 @@ const CommentList = ({ positionId }) => {
           } else {
             console.error("Failed to fetch comments:", data.message);
           }
+          message.success("Xóa bình luận thành công");
         })
         .catch((error) => {
           console.error("Error fetching comments:", error);

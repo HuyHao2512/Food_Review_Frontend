@@ -1,11 +1,12 @@
 import React from "react";
-import { Button, Dropdown, Rate, Menu } from "antd";
+import { Button, Dropdown, Rate, Menu, Flex } from "antd";
 import {
   StarOutlined,
   DragOutlined,
   FieldTimeOutlined,
   FullscreenOutlined,
 } from "@ant-design/icons";
+import SearchFilter from "../Filter/SearchFilter";
 const ButtonFilter = ({ onSubmit, onDistance, onTime, onAll }) => {
   const handleChangeRate = (e) => {
     onSubmit(e);
@@ -129,8 +130,11 @@ const ButtonFilter = ({ onSubmit, onDistance, onTime, onAll }) => {
         backgroundColor: "transparent", // Nền trong suốt
         border: "none", // Không có đường viền
         zIndex: 1000, // Đảm bảo menu nằm trên bản đồ
+        display: "flex",
       }}
     >
+      <SearchFilter />
+
       <Dropdown
         overlay={
           <Menu>

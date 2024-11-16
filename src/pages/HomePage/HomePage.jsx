@@ -355,25 +355,32 @@ function HomePage() {
           {foods.map((food) => (
             <Marker key={food.id} position={food.point}>
               <Popup>
-                <h4 style={{ textAlign: "center", fontWeight: "700" }}>
-                  {food.name}
-                </h4>
-                <Space>
-                  <Button
-                    onClick={() => {
-                      showDrawer(); // Đóng Drawer khi bấm nút "Chỉ đường"
+                <div style={{ textAlign: "center" }}>
+                  <h4 style={{ fontWeight: "700" }}>{food.name}</h4>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      marginTop: "10px",
                     }}
                   >
-                    Xem thông tin quán
-                  </Button>
-                </Space>
-                <DrawerPosition
-                  food={food}
-                  open={openDrawer}
-                  placement={placement}
-                  onClose={onCloseDrawer}
-                  onDirectionClick={() => handleDirectionClick(food)}
-                />
+                    <Button
+                      onClick={() => {
+                        showDrawer(); // Đóng Drawer khi bấm nút "Chỉ đường"
+                      }}
+                      style={{ textAlign: "center" }}
+                    >
+                      Xem thông tin quán
+                    </Button>
+                  </div>
+                  <DrawerPosition
+                    food={food}
+                    open={openDrawer}
+                    placement={placement}
+                    onClose={onCloseDrawer}
+                    onDirectionClick={() => handleDirectionClick(food)}
+                  />
+                </div>
               </Popup>
             </Marker>
           ))}
